@@ -17,23 +17,36 @@ export function App() {
   useEffect(() => {
     const initGame = async () => {
       try {
+        console.log('[App] Starting data load...');
+        
         const result = await loadAllData();
+        
+        console.log('[App] Data load result:', result);
 
         if (!result.success) {
+          console.error('[App] Data load failed:', result.errors);
           setError(result.errors.join('\n'));
           return;
         }
 
         const mapData = mapRegistry.get('skirmish_1');
+        console.log('[App] Map data retrieved:', mapData ? `found (${mapData.width}x${mapData.height})` : 'null');
+        
         if (!mapData) {
           setError('Could not find skirmish_1 map');
           return;
         }
 
+        console.log('[App] Initializing game engine...');
         gameEngine.initialize(mapData);
+        
+        const state = gameEngine.getState();
+        console.log('[App] Game state initialized:', state ? `phase=${state.phase}, units=${state.units.size}` : 'null');
 
         setLoading(false);
+        console.log('[App] Loading complete, loading=false');
       } catch (err) {
+        console.error('[App] Initialization error:', err);
         setError(`Failed to initialize: ${err}`);
       }
     };
@@ -43,6 +56,8 @@ export function App() {
 
   useEffect(() => {
     if (loading || error || started) return;
+
+    console.log('[App] Creating Phaser game...');
 
     const config: Phaser.Types.Core.GameConfig = {
       type: Phaser.AUTO,
@@ -62,11 +77,15 @@ export function App() {
     };
 
     gameRef.current = new Phaser.Game(config);
+    console.log('[App] Phaser game created');
 
     const scene = gameRef.current.scene.getScene('GameScene') as GameScene;
+    console.log('[App] Scene retrieved:', scene ? 'found' : 'null');
+    
     if (scene) {
       sceneRef.current = scene;
       const state = gameEngine.getState();
+      console.log('[App] Calling scene.updateState...');
       if (state) {
         scene.updateState(state);
       }
@@ -80,6 +99,7 @@ export function App() {
     }, 100);
 
     setStarted(true);
+    console.log('[App] started=true');
 
     return () => {
       clearInterval(unsubscribe);

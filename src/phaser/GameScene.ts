@@ -5,6 +5,7 @@ import { eventBus } from '../game/events';
 import { unitRegistry, terrainRegistry } from '../game/registry';
 
 const TILE_SIZE = 64;
+
 const COLORS = {
   PLains: 0x4a7c3f,
   FOREST: 0x2d5a27,
@@ -19,15 +20,13 @@ const COLORS = {
   SELECTED: 0xffff00,
   UNIT_ALLY: 0x4488ff,
   UNIT_ENEMY: 0xff4444,
-  UNIT_SPENT: 0x666666,
-  BUILDING_ALLY: 0x4488ff,
   BUILDING_NEUTRAL: 0x888888,
-  BUILDING_ENEMY: 0xff4444,
 };
 
 export class GameScene extends Phaser.Scene {
   private tileGraphics!: Phaser.GameObjects.Graphics;
-  private unitContainer!: Phaser.GameObjects.Container;
+  private unitGraphics!: Phaser.GameObjects.Graphics;
+  private buildingGraphics!: Phaser.GameObjects.Graphics;
   private overlayGraphics!: Phaser.GameObjects.Graphics;
   private state: GameState | null = null;
   private unsubscribeFunctions: (() => void)[] = [];
@@ -36,13 +35,11 @@ export class GameScene extends Phaser.Scene {
     super({ key: 'GameScene' });
   }
 
-  preload(): void {
-    this.createPlaceholderTextures();
-  }
-
   create(): void {
+    // Create separate graphics layers
     this.tileGraphics = this.add.graphics();
-    this.unitContainer = this.add.container(0, 0);
+    this.unitGraphics = this.add.graphics();
+    this.buildingGraphics = this.add.graphics();
     this.overlayGraphics = this.add.graphics();
 
     this.setupInput();
@@ -50,63 +47,18 @@ export class GameScene extends Phaser.Scene {
 
     const state = gameEngine.getState();
     if (state) {
+      console.log('[GameScene] Initial state received, rendering...');
+      console.log('[GameScene] Map size:', state.map.length, 'x', state.map[0]?.length);
+      console.log('[GameScene] Units count:', state.units.size);
+      console.log('[GameScene] Buildings count:', state.buildings.size);
       this.renderMap(state.map);
+      this.renderBuildings(state);
       this.renderUnits(state);
+    } else {
+      console.log('[GameScene] ERROR: No state received from gameEngine!');
     }
 
     this.cameras.main.setBackgroundColor('#1a1a2e');
-  }
-
-  private createPlaceholderTextures(): void {
-    const graphics = this.make.graphics({});
-
-    graphics.fillStyle(0xffffff, 1);
-    graphics.fillCircle(16, 16, 14);
-    graphics.fillStyle(0x000000, 1);
-    graphics.fillCircle(16, 16, 12);
-
-    graphics.generateTexture('unit_infantry', 32, 32);
-    graphics.destroy();
-
-    const tankGraphics = this.make.graphics({});
-    tankGraphics.fillStyle(0xffffff, 1);
-    tankGraphics.fillRect(4, 8, 24, 16);
-    tankGraphics.fillStyle(0x000000, 1);
-    tankGraphics.fillRect(8, 12, 16, 8);
-    tankGraphics.generateTexture('unit_vehicle', 32, 32);
-    tankGraphics.destroy();
-
-    const artilleryGraphics = this.make.graphics({});
-    artilleryGraphics.fillStyle(0xffffff, 1);
-    artilleryGraphics.fillRect(6, 10, 20, 12);
-    artilleryGraphics.fillStyle(0x000000, 1);
-    artilleryGraphics.fillRect(20, 8, 10, 4);
-    artilleryGraphics.generateTexture('unit_artillery', 32, 32);
-    artilleryGraphics.destroy();
-
-    const buildingGraphics = this.make.graphics({});
-    buildingGraphics.fillStyle(0x888888, 1);
-    buildingGraphics.fillRect(4, 4, 56, 56);
-    buildingGraphics.fillStyle(0x444444, 1);
-    buildingGraphics.fillRect(8, 8, 48, 48);
-    buildingGraphics.generateTexture('building', 64, 64);
-    buildingGraphics.destroy();
-
-    const hqGraphics = this.make.graphics({});
-    hqGraphics.fillStyle(0x8b0000, 1);
-    hqGraphics.fillRect(0, 0, 64, 64);
-    hqGraphics.fillStyle(0xff4444, 1);
-    hqGraphics.fillRect(8, 8, 48, 48);
-    hqGraphics.generateTexture('hq', 64, 64);
-    hqGraphics.destroy();
-
-    const factoryGraphics = this.make.graphics({});
-    factoryGraphics.fillStyle(0x555555, 1);
-    factoryGraphics.fillRect(0, 0, 64, 64);
-    factoryGraphics.fillStyle(0x888888, 1);
-    factoryGraphics.fillRect(8, 8, 48, 48);
-    factoryGraphics.generateTexture('factory', 64, 64);
-    factoryGraphics.destroy();
   }
 
   private setupInput(): void {
@@ -286,7 +238,10 @@ export class GameScene extends Phaser.Scene {
     this.unsubscribeFunctions.push(
       eventBus.on('UNIT_MOVED', () => {
         this.state = gameEngine.getState();
-        if (this.state) this.renderUnits(this.state);
+        if (this.state) {
+          this.renderUnits(this.state);
+          this.renderBuildings(this.state);
+        }
         this.renderOverlays();
       })
     );
@@ -294,7 +249,9 @@ export class GameScene extends Phaser.Scene {
     this.unsubscribeFunctions.push(
       eventBus.on('UNIT_ATTACKED', () => {
         this.state = gameEngine.getState();
-        if (this.state) this.renderUnits(this.state);
+        if (this.state) {
+          this.renderUnits(this.state);
+        }
         this.renderOverlays();
       })
     );
@@ -302,7 +259,9 @@ export class GameScene extends Phaser.Scene {
     this.unsubscribeFunctions.push(
       eventBus.on('UNIT_DESTROYED', () => {
         this.state = gameEngine.getState();
-        if (this.state) this.renderUnits(this.state);
+        if (this.state) {
+          this.renderUnits(this.state);
+        }
         this.renderOverlays();
       })
     );
@@ -310,7 +269,9 @@ export class GameScene extends Phaser.Scene {
     this.unsubscribeFunctions.push(
       eventBus.on('TURN_START', () => {
         this.state = gameEngine.getState();
-        if (this.state) this.renderUnits(this.state);
+        if (this.state) {
+          this.renderUnits(this.state);
+        }
         this.renderOverlays();
       })
     );
@@ -334,32 +295,15 @@ export class GameScene extends Phaser.Scene {
         let color = COLORS.PLains;
         if (terrain) {
           switch (terrain.id) {
-            case 'plains':
-              color = COLORS.PLains;
-              break;
-            case 'forest':
-              color = COLORS.FOREST;
-              break;
-            case 'road':
-              color = COLORS.ROAD;
-              break;
-            case 'water':
-              color = COLORS.WATER;
-              break;
-            case 'impassable':
-              color = COLORS.IMPASSABLE;
-              break;
-            case 'hq':
-              color = COLORS.HQ;
-              break;
-            case 'factory':
-              color = COLORS.FACTORY;
-              break;
-            case 'city':
-              color = COLORS.CITY;
-              break;
-            default:
-              color = COLORS.PLains;
+            case 'plains': color = COLORS.PLains; break;
+            case 'forest': color = COLORS.FOREST; break;
+            case 'road': color = COLORS.ROAD; break;
+            case 'water': color = COLORS.WATER; break;
+            case 'impassable': color = COLORS.IMPASSABLE; break;
+            case 'hq': color = COLORS.HQ; break;
+            case 'factory': color = COLORS.FACTORY; break;
+            case 'city': color = COLORS.CITY; break;
+            default: color = COLORS.PLains;
           }
         }
 
@@ -372,65 +316,81 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
+  private renderBuildings(state: GameState): void {
+    this.buildingGraphics.clear();
+
+    for (const building of state.buildings.values()) {
+      const centerX = building.position.x * TILE_SIZE + TILE_SIZE / 2;
+      const centerY = building.position.y * TILE_SIZE + TILE_SIZE / 2;
+      const size = TILE_SIZE * 0.4;
+
+      let color = COLORS.BUILDING_NEUTRAL;
+      if (building.owner === 1) {
+        color = COLORS.UNIT_ALLY;
+      } else if (building.owner === 2) {
+        color = COLORS.UNIT_ENEMY;
+      }
+
+      this.buildingGraphics.fillStyle(color, 0.8);
+
+      const topPoint = { x: centerX, y: centerY - size };
+      const bottomLeft = { x: centerX - size, y: centerY + size };
+      const bottomRight = { x: centerX + size, y: centerY + size };
+
+      this.buildingGraphics.fillTriangle(
+        topPoint.x, topPoint.y,
+        bottomLeft.x, bottomLeft.y,
+        bottomRight.x, bottomRight.y
+      );
+
+      this.buildingGraphics.lineStyle(2, 0x000000, 0.5);
+      this.buildingGraphics.strokeTriangle(
+        topPoint.x, topPoint.y,
+        bottomLeft.x, bottomLeft.y,
+        bottomRight.x, bottomRight.y
+      );
+    }
+  }
+
   private renderUnits(state: GameState): void {
-    this.unitContainer.removeAll(true);
+    this.unitGraphics.clear();
 
     for (const unit of state.units.values()) {
       const definition = unitRegistry.get(unit.definitionId);
       if (!definition) continue;
 
-      let textureKey = 'unit_infantry';
-      if (definition.category === 'vehicle') {
-        textureKey = 'unit_vehicle';
-      } else if (definition.id.includes('whirlwind')) {
-        textureKey = 'unit_artillery';
-      }
+      const tileCenterX = unit.position.x * TILE_SIZE + TILE_SIZE / 2;
+      const tileCenterY = unit.position.y * TILE_SIZE + TILE_SIZE / 2;
 
-      const x = unit.position.x * TILE_SIZE + TILE_SIZE / 2;
-      const y = unit.position.y * TILE_SIZE + TILE_SIZE / 2;
+      const unitSize = TILE_SIZE * 0.75;
+      const halfSize = unitSize / 2;
 
-      const sprite = this.add.sprite(x, y, textureKey);
-      sprite.setTint(unit.owner === 1 ? 0x4488ff : 0xff4444);
+      const unitColor = unit.owner === 1 ? COLORS.UNIT_ALLY : COLORS.UNIT_ENEMY;
+      const outlineColor = unit.owner === 1 ? 0x2266cc : 0xcc2222;
 
-      if (unit.hasActed) {
-        sprite.setAlpha(0.5);
-      }
+      this.unitGraphics.fillStyle(unitColor, 1);
+      this.unitGraphics.fillRect(tileCenterX - halfSize, tileCenterY - halfSize, unitSize, unitSize);
 
-      const hpBarWidth = TILE_SIZE - 8;
-      const hpBarHeight = 6;
-      const hpFraction = unit.currentHp / unit.maxHp;
+      this.unitGraphics.lineStyle(2, outlineColor, 1);
+      this.unitGraphics.strokeRect(tileCenterX - halfSize, tileCenterY - halfSize, unitSize, unitSize);
 
-      const hpBarBg = this.add.graphics();
-      hpBarBg.fillStyle(0x000000, 0.7);
-      hpBarBg.fillRect(x - hpBarWidth / 2, y + TILE_SIZE / 2 - 12, hpBarWidth, hpBarHeight);
+      const letter = definition.name.charAt(0).toUpperCase();
+      const text = this.add.text(tileCenterX, tileCenterY - 6, letter, {
+        fontSize: '24px',
+        fontFamily: 'Arial',
+        fontStyle: 'bold',
+        color: '#ffffff'
+      });
+      text.setOrigin(0.5);
 
-      const hpBar = this.add.graphics();
-      hpBar.fillStyle(0x00ff00, 1);
-      hpBar.fillRect(x - hpBarWidth / 2, y + TILE_SIZE / 2 - 12, hpBarWidth * hpFraction, hpBarHeight);
-
-      this.unitContainer.add(sprite);
-      this.unitContainer.add(hpBarBg);
-      this.unitContainer.add(hpBar);
-    }
-
-    for (const building of state.buildings.values()) {
-      const x = building.position.x * TILE_SIZE + TILE_SIZE / 2;
-      const y = building.position.y * TILE_SIZE + TILE_SIZE / 2;
-
-      let textureKey = 'building';
-      if (building.terrainId === 'hq') {
-        textureKey = 'hq';
-      } else if (building.terrainId === 'factory') {
-        textureKey = 'factory';
-      }
-
-      const sprite = this.add.sprite(x, y, textureKey);
-      if (building.owner) {
-        sprite.setTint(building.owner === 1 ? 0x4488ff : 0xff4444);
-      }
-      sprite.setAlpha(0.8);
-
-      this.unitContainer.add(sprite);
+      const hpValue = Math.max(1, Math.round((unit.currentHp / unit.maxHp) * 10));
+      const hpText = this.add.text(tileCenterX, tileCenterY + 14, hpValue.toString(), {
+        fontSize: '14px',
+        fontFamily: 'Arial',
+        fontStyle: 'bold',
+        color: '#ffffff'
+      });
+      hpText.setOrigin(0.5);
     }
   }
 
@@ -520,19 +480,38 @@ export class GameScene extends Phaser.Scene {
 
   updateState(state: GameState): void {
     this.state = state;
+    
+    console.log('[GameScene.updateState] Phase:', state.phase);
+    console.log('[GameScene.updateState] Map:', state.map.length, 'x', state.map[0]?.length);
+    console.log('[GameScene.updateState] Units:', state.units.size);
+    console.log('[GameScene.updateState] Buildings:', state.buildings.size);
+
     this.renderMap(state.map);
+    this.renderBuildings(state);
     this.renderUnits(state);
     this.renderOverlays();
 
     if (state.map.length > 0 && state.map[0].length > 0) {
       const mapWidth = state.map[0].length * TILE_SIZE;
       const mapHeight = state.map.length * TILE_SIZE;
+      
       this.cameras.main.setBounds(0, 0, mapWidth, mapHeight);
-      this.cameras.main.setZoom(Math.min(
+      
+      const zoom = Math.min(
         this.cameras.main.width / mapWidth,
         this.cameras.main.height / mapHeight,
         1
-      ));
+      );
+      
+      console.log('[GameScene.updateState] Camera:', {
+        viewWidth: this.cameras.main.width,
+        viewHeight: this.cameras.main.height,
+        mapWidth,
+        mapHeight,
+        zoom
+      });
+      
+      this.cameras.main.setZoom(Math.max(zoom, 0.1));
     }
   }
 
