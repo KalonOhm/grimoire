@@ -1,0 +1,299 @@
+[
+  {
+    "id": "intercessor_squad",
+    "name": "Intercessor Squad",
+    "faction": "space_marines",
+    "category": "infantry",
+    "cost": 1500,
+    "roster": {
+      "model_count": 5,
+      "hp_per_model": 20
+    },
+    "combat_model": "linear",
+    "armor": "heavy_infantry",
+    "movement": {
+      "points": 3,
+      "type": "infantry"
+    },
+    "vision": 2,
+    "fuel": 99,
+    "ammo": 9,
+    "can_capture": true,
+    "transport_tags_allowed": ["transport_infantry_light", "transport_infantry_heavy", "drop_pod"],
+    "weapons": {
+      "primary": {
+        "name": "Bolter",
+        "uses_ammo": true,
+        "min_range": 1,
+        "max_range": 2,
+        "fire_after_move": true,
+        "range_penalty_multiplier": 0.6,
+        "damage_vs_armor": {
+          "light_infantry": 55,
+          "heavy_infantry": 45,
+          "super_heavy_infantry": 25,
+          "light_vehicle": 30,
+          "medium_vehicle": 15,
+          "heavy_vehicle": 5,
+          "fortification": 1,
+          "aircraft": -1
+        }
+      },
+      "secondary": {
+        "name": "Combat Knife",
+        "uses_ammo": false,
+        "min_range": 1,
+        "max_range": 1,
+        "fire_after_move": true,
+        "range_penalty_multiplier": 1.0,
+        "damage_vs_armor": {
+          "light_infantry": 15,
+          "heavy_infantry": 10,
+          "super_heavy_infantry": 5,
+          "light_vehicle": 5,
+          "medium_vehicle": 2,
+          "heavy_vehicle": 1,
+          "fortification": 1,
+          "aircraft": -1
+        }
+      }
+    },
+    "sprite": "intercessor_squad"
+  },
+  {
+    "id": "assault_jump_squad",
+    "name": "Assault Jump Squad",
+    "faction": "space_marines",
+    "category": "infantry",
+    "cost": 1800,
+    "roster": {
+      "model_count": 5,
+      "hp_per_model": 20
+    },
+    "combat_model": "linear",
+    "armor": "heavy_infantry",
+    "movement": {
+      "points": 4,
+      "type": "fly"
+    },
+    "vision": 2,
+    "fuel": 60,
+    "ammo": 3,
+    "can_capture": true,
+    "transport_tags_allowed": ["transport_infantry_heavy", "drop_pod"],
+    "weapons": {
+      "primary": {
+        "name": "Heavy Bolt Pistol",
+        "uses_ammo": true,
+        "min_range": 1,
+        "max_range": 1,
+        "fire_after_move": true,
+        "range_penalty_multiplier": 1.0,
+        "damage_vs_armor": {
+          "light_infantry": 45,
+          "heavy_infantry": 35,
+          "super_heavy_infantry": 20,
+          "light_vehicle": 20,
+          "medium_vehicle": 10,
+          "heavy_vehicle": 2,
+          "fortification": 1,
+          "aircraft": -1
+        }
+      },
+      "secondary": {
+        "name": "Astartes Chainsword",
+        "uses_ammo": false,
+        "min_range": 1,
+        "max_range": 1,
+        "fire_after_move": true,
+        "range_penalty_multiplier": 1.0,
+        "damage_vs_armor": {
+          "light_infantry": 80,
+          "heavy_infantry": 65,
+          "super_heavy_infantry": 35,
+          "light_vehicle": 25,
+          "medium_vehicle": 15,
+          "heavy_vehicle": 5,
+          "fortification": 5,
+          "aircraft": -1
+        }
+      }
+    },
+    "sprite": "assault_jump_squad"
+  },
+  {
+    "id": "predator_tank",
+    "name": "Predator",
+    "faction": "space_marines",
+    "category": "vehicle",
+    "cost": 4000,
+    "roster": {
+      "model_count": 1,
+      "hp_per_model": 120
+    },
+    "combat_model": "stepped",
+    "damaged_threshold": 40,
+    "damaged_effects": {
+      "damage_multiplier": 0.5,
+      "movement_modifier": -2
+    },
+    "armor": "heavy_vehicle",
+    "movement": {
+      "points": 6,
+      "type": "tread"
+    },
+    "vision": 3,
+    "fuel": 99,
+    "ammo": 9,
+    "can_capture": false,
+    "transport_tags_allowed": [],
+    "weapons": {
+      "primary": {
+        "name": "Predator Autocannon",
+        "uses_ammo": true,
+        "min_range": 1,
+        "max_range": 2,
+        "fire_after_move": true,
+        "range_penalty_multiplier": 0.8,
+        "damage_vs_armor": {
+          "light_infantry": 70,
+          "heavy_infantry": 60,
+          "super_heavy_infantry": 50,
+          "light_vehicle": 75,
+          "medium_vehicle": 65,
+          "heavy_vehicle": 45,
+          "fortification": 25,
+          "aircraft": 15
+        }
+      },
+      "secondary": {
+        "name": "Storm Bolter",
+        "uses_ammo": false,
+        "min_range": 1,
+        "max_range": 1,
+        "fire_after_move": true,
+        "range_penalty_multiplier": 1.0,
+        "damage_vs_armor": {
+          "light_infantry": 35,
+          "heavy_infantry": 20,
+          "super_heavy_infantry": 10,
+          "light_vehicle": 10,
+          "medium_vehicle": 3,
+          "heavy_vehicle": 1,
+          "fortification": 1,
+          "aircraft": -1
+        }
+      }
+    },
+    "sprite": "predator_tank"
+  },
+  {
+    "id": "whirlwind_tank",
+    "name": "Whirlwind",
+    "faction": "space_marines",
+    "category": "vehicle",
+    "cost": 6000,
+    "roster": {
+      "model_count": 1,
+      "hp_per_model": 110
+    },
+    "combat_model": "stepped",
+    "damaged_threshold": 35,
+    "damaged_effects": {
+      "damage_multiplier": 0.5,
+      "movement_modifier": -2
+    },
+    "armor": "medium_vehicle",
+    "movement": {
+      "points": 5,
+      "type": "tread"
+    },
+    "vision": 2,
+    "fuel": 99,
+    "ammo": 6,
+    "can_capture": false,
+    "transport_tags_allowed": [],
+    "weapons": {
+      "primary": {
+        "name": "Castellan Missiles",
+        "uses_ammo": true,
+        "min_range": 3,
+        "max_range": 5,
+        "fire_after_move": false,
+        "range_penalty_multiplier": 1.0,
+        "damage_vs_armor": {
+          "light_infantry": 85,
+          "heavy_infantry": 75,
+          "super_heavy_infantry": 60,
+          "light_vehicle": 65,
+          "medium_vehicle": 45,
+          "heavy_vehicle": 25,
+          "fortification": 50,
+          "aircraft": -1
+        }
+      }
+    },
+    "sprite": "whirlwind_tank"
+  },
+  {
+    "id": "scout_squad",
+    "name": "Scout Squad",
+    "faction": "space_marines",
+    "category": "infantry",
+    "cost": 800,
+    "roster": {
+      "model_count": 5,
+      "hp_per_model": 15
+    },
+    "combat_model": "linear",
+    "armor": "light_infantry",
+    "movement": {
+      "points": 4,
+      "type": "infantry"
+    },
+    "vision": 3,
+    "fuel": 99,
+    "ammo": 6,
+    "can_capture": true,
+    "transport_tags_allowed": ["transport_infantry_light"],
+    "weapons": {
+      "primary": {
+        "name": "Bolt Pistol",
+        "uses_ammo": true,
+        "min_range": 1,
+        "max_range": 1,
+        "fire_after_move": true,
+        "range_penalty_multiplier": 1.0,
+        "damage_vs_armor": {
+          "light_infantry": 35,
+          "heavy_infantry": 25,
+          "super_heavy_infantry": 10,
+          "light_vehicle": 15,
+          "medium_vehicle": 5,
+          "heavy_vehicle": 1,
+          "fortification": 1,
+          "aircraft": -1
+        }
+      },
+      "secondary": {
+        "name": "Combat Blade",
+        "uses_ammo": false,
+        "min_range": 1,
+        "max_range": 1,
+        "fire_after_move": true,
+        "range_penalty_multiplier": 1.0,
+        "damage_vs_armor": {
+          "light_infantry": 20,
+          "heavy_infantry": 15,
+          "super_heavy_infantry": 5,
+          "light_vehicle": 5,
+          "medium_vehicle": 2,
+          "heavy_vehicle": 1,
+          "fortification": 1,
+          "aircraft": -1
+        }
+      }
+    },
+    "sprite": "scout_squad"
+  }
+]

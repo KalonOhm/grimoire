@@ -1,0 +1,235 @@
+import { Position, Unit, MovementType, GameState } from './types';
+import { terrainRegistry, unitRegistry } from './registry';
+
+interface PathNode {
+  position: Position;
+  g: number;
+  h: number;
+  f: number;
+  parent: PathNode | null;
+}
+
+function manhattanDistance(a: Position, b: Position): number {
+  return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+}
+
+function positionKey(pos: Position): string {
+  return `${pos.x},${pos.y}`;
+}
+
+function getMovementCost(terrainId: string, moveType: MovementType): number | null {
+  const terrain = terrainRegistry.get(terrainId);
+  if (!terrain) return null;
+  if (terrain.blocks_movement) return null;
+
+  const cost = terrain.movement_cost[moveType];
+  if (cost === undefined) return null;
+  if (cost < 0) return null;
+
+  return cost;
+}
+
+export function findPath(
+  from: Position,
+  to: Position,
+  movingUnit: Unit,
+  gameState: GameState
+): Position[] | null {
+  const definition = unitRegistry.get(movingUnit.definitionId);
+  if (!definition) return null;
+
+  const moveType = definition.movement.type;
+  const maxCost = definition.movement.points;
+
+  const openSet: PathNode[] = [];
+  const closedSet = new Set<string>();
+
+  const startNode: PathNode = {
+    position: from,
+    g: 0,
+    h: manhattanDistance(from, to),
+    f: manhattanDistance(from, to),
+    parent: null,
+  };
+
+  openSet.push(startNode);
+
+  while (openSet.length > 0) {
+    openSet.sort((a, b) => a.f - b.f);
+    const current = openSet.shift()!;
+
+    if (current.position.x === to.x && current.position.y === to.y) {
+      const path: Position[] = [];
+      let node: PathNode | null = current;
+      while (node) {
+        path.unshift(node.position);
+        node = node.parent;
+      }
+      return path.slice(1);
+    }
+
+    closedSet.add(positionKey(current.position));
+
+    const neighbors: Position[] = [
+      { x: current.position.x + 1, y: current.position.y },
+      { x: current.position.x - 1, y: current.position.y },
+      { x: current.position.x, y: current.position.y + 1 },
+      { x: current.position.x, y: current.position.y - 1 },
+    ];
+
+    for (const neighbor of neighbors) {
+      const key = positionKey(neighbor);
+
+      if (closedSet.has(key)) continue;
+
+      if (
+        neighbor.x < 0 ||
+        neighbor.y < 0 ||
+        neighbor.x >= gameState.map[0].length ||
+        neighbor.y >= gameState.map.length
+      ) {
+        continue;
+      }
+
+      const tile = gameState.map[neighbor.y][neighbor.x];
+
+      if (tile.content.type === 'unit' && tile.content.unitId !== movingUnit.instanceId) {
+        const blockingUnit = gameState.units.get(tile.content.unitId);
+        if (blockingUnit && blockingUnit.owner !== movingUnit.owner) {
+          if (neighbor.x !== to.x || neighbor.y !== to.y) {
+            continue;
+          }
+        }
+      }
+
+      const cost = getMovementCost(tile.terrainId, moveType);
+      if (cost === null) continue;
+
+      const tentativeG = current.g + cost;
+
+      if (tentativeG > maxCost) continue;
+
+      const existingNode = openSet.find(
+        (n) => n.position.x === neighbor.x && n.position.y === neighbor.y
+      );
+
+      if (existingNode) {
+        if (tentativeG < existingNode.g) {
+          existingNode.g = tentativeG;
+          existingNode.f = tentativeG + existingNode.h;
+          existingNode.parent = current;
+        }
+      } else {
+        const h = manhattanDistance(neighbor, to);
+        openSet.push({
+          position: neighbor,
+          g: tentativeG,
+          h,
+          f: tentativeG + h,
+          parent: current,
+        });
+      }
+    }
+  }
+
+  return null;
+}
+
+export function getReachableTiles(
+  unit: Unit,
+  gameState: GameState
+): Position[] {
+  const definition = unitRegistry.get(unit.definitionId);
+  if (!definition) return [];
+
+  const moveType = definition.movement.type;
+  const maxCost = definition.movement.points;
+
+  const reachable: Position[] = [];
+  const visited = new Map<string, number>();
+
+  const startKey = positionKey(unit.position);
+  visited.set(startKey, 0);
+
+  const queue: Array<{ pos: Position; cost: number }> = [
+    { pos: unit.position, cost: 0 },
+  ];
+
+  while (queue.length > 0) {
+    const current = queue.shift()!;
+
+    if (current.cost > 0) {
+      reachable.push(current.pos);
+    }
+
+    const neighbors: Position[] = [
+      { x: current.pos.x + 1, y: current.pos.y },
+      { x: current.pos.x - 1, y: current.pos.y },
+      { x: current.pos.x, y: current.pos.y + 1 },
+      { x: current.pos.x, y: current.pos.y - 1 },
+    ];
+
+    for (const neighbor of neighbors) {
+      if (
+        neighbor.x < 0 ||
+        neighbor.y < 0 ||
+        neighbor.x >= gameState.map[0].length ||
+        neighbor.y >= gameState.map.length
+      ) {
+        continue;
+      }
+
+      const tile = gameState.map[neighbor.y][neighbor.x];
+
+      if (tile.content.type === 'unit') {
+        const blockingUnit = gameState.units.get(tile.content.unitId);
+        if (blockingUnit && blockingUnit.owner !== unit.owner) {
+          continue;
+        }
+        if (blockingUnit && blockingUnit.owner === unit.owner && tile.content.unitId !== unit.instanceId) {
+          continue;
+        }
+      }
+
+      const cost = getMovementCost(tile.terrainId, moveType);
+      if (cost === null) continue;
+
+      const totalCost = current.cost + cost;
+      if (totalCost > maxCost) continue;
+
+      const neighborKey = positionKey(neighbor);
+      const existingCost = visited.get(neighborKey);
+
+      if (existingCost === undefined || totalCost < existingCost) {
+        visited.set(neighborKey, totalCost);
+        queue.push({ pos: neighbor, cost: totalCost });
+      }
+    }
+  }
+
+  return reachable;
+}
+
+export function getMovementCostTo(
+  unit: Unit,
+  to: Position,
+  gameState: GameState
+): number | null {
+  const path = findPath(unit.position, to, unit, gameState);
+  if (!path) return null;
+
+  const definition = unitRegistry.get(unit.definitionId);
+  if (!definition) return null;
+
+  let totalCost = 0;
+  const moveType = definition.movement.type;
+
+  for (const pos of path) {
+    const tile = gameState.map[pos.y][pos.x];
+    const cost = getMovementCost(tile.terrainId, moveType);
+    if (cost === null) return null;
+    totalCost += cost;
+  }
+
+  return totalCost;
+}

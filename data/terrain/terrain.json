@@ -1,0 +1,161 @@
+[
+  {
+    "id": "plains",
+    "name": "Plains",
+    "defense": 10,
+    "movement_cost": {
+      "infantry": 1,
+      "tread": 1,
+      "tire": 1,
+      "fly": 1,
+      "mount": 1
+    },
+    "blocks_movement": false,
+    "can_capture": false,
+    "income_per_turn": 0
+  },
+  {
+    "id": "forest",
+    "name": "Forest",
+    "defense": 30,
+    "movement_cost": {
+      "infantry": 1,
+      "tread": 2,
+      "tire": 2,
+      "fly": 1,
+      "mount": 2
+    },
+    "blocks_movement": false,
+    "can_capture": false,
+    "income_per_turn": 0
+  },
+  {
+    "id": "mountain",
+    "name": "Mountain",
+    "defense": 40,
+    "movement_cost": {
+      "infantry": 2,
+      "tread": -1,
+      "tire": -1,
+      "fly": 1,
+      "mount": 2
+    },
+    "blocks_movement": false,
+    "can_capture": false,
+    "income_per_turn": 0
+  },
+  {
+    "id": "road",
+    "name": "Road",
+    "defense": 0,
+    "movement_cost": {
+      "infantry": 1,
+      "tread": 1,
+      "tire": 1,
+      "fly": 1,
+      "mount": 1
+    },
+    "blocks_movement": false,
+    "can_capture": false,
+    "income_per_turn": 0
+  },
+  {
+    "id": "river",
+    "name": "River",
+    "defense": 5,
+    "movement_cost": {
+      "infantry": 2,
+      "tread": -1,
+      "tire": -1,
+      "fly": 1,
+      "mount": -1
+    },
+    "blocks_movement": false,
+    "can_capture": false,
+    "income_per_turn": 0
+  },
+  {
+    "id": "bridge",
+    "name": "Bridge",
+    "defense": 0,
+    "movement_cost": {
+      "infantry": 1,
+      "tread": 1,
+      "tire": 1,
+      "fly": 1,
+      "mount": 1
+    },
+    "blocks_movement": false,
+    "can_capture": false,
+    "income_per_turn": 0
+  },
+  {
+    "id": "hq",
+    "name": "Headquarters",
+    "defense": 50,
+    "movement_cost": {
+      "infantry": 1,
+      "tread": 1,
+      "tire": 1,
+      "fly": 1,
+      "mount": 1
+    },
+    "blocks_movement": false,
+    "can_capture": true,
+    "income_per_turn": 1000
+  },
+  {
+    "id": "factory",
+    "name": "Factory",
+    "defense": 40,
+    "movement_cost": {
+      "infantry": 1,
+      "tread": 1,
+      "tire": 1,
+      "fly": 1,
+      "mount": 1
+    },
+    "blocks_movement": false,
+    "can_capture": true,
+    "income_per_turn": 500
+  },
+  {
+    "id": "city",
+    "name": "City",
+    "defense": 30,
+    "movement_cost": {
+      "infantry": 1,
+      "tread": 1,
+      "tire": 1,
+      "fly": 1,
+      "mount": 1
+    },
+    "blocks_movement": false,
+    "can_capture": true,
+    "income_per_turn": 250
+  },
+  {
+    "id": "water",
+    "name": "Water",
+    "defense": 0,
+    "movement_cost": {
+      "infantry": -1,
+      "tread": -1,
+      "tire": -1,
+      "fly": 1,
+      "mount": -1
+    },
+    "blocks_movement": true,
+    "can_capture": false,
+    "income_per_turn": 0
+  },
+  {
+    "id": "impassable",
+    "name": "Impassable",
+    "defense": 0,
+    "movement_cost": {},
+    "blocks_movement": true,
+    "can_capture": false,
+    "income_per_turn": 0
+  }
+]
