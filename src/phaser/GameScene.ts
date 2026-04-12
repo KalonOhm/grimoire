@@ -59,6 +59,10 @@ export class GameScene extends Phaser.Scene {
     }
 
     this.cameras.main.setBackgroundColor('#1a1a2e');
+
+    // Emit scene ready event so App can call updateState
+    console.log('[GameScene] Emitting SCENE_READY event');
+    eventBus.emit('SCENE_READY', undefined);
   }
 
   private setupInput(): void {

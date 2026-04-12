@@ -3,6 +3,7 @@ import * as Phaser from 'phaser';
 import { GameScene } from './phaser/GameScene';
 import { GameUI } from './components/GameUI';
 import { gameEngine } from './game/engine';
+import { eventBus } from './game/events';
 import { loadAllData } from './game/loader';
 import { mapRegistry } from './game/registry';
 import './App.css';
@@ -79,18 +80,26 @@ export function App() {
     gameRef.current = new Phaser.Game(config);
     console.log('[App] Phaser game created');
 
-    const scene = gameRef.current.scene.getScene('GameScene') as GameScene;
-    console.log('[App] Scene retrieved:', scene ? 'found' : 'null');
-    
-    if (scene) {
-      sceneRef.current = scene;
-      const state = gameEngine.getState();
-      console.log('[App] Calling scene.updateState...');
-      if (state) {
-        scene.updateState(state);
+    // Listen for scene ready event instead of trying to get scene immediately
+    const unsubscribeSceneReady = eventBus.on('SCENE_READY', () => {
+      console.log('[App] SCENE_READY event received');
+      
+      // Now we can safely get the scene
+      const scene = gameRef.current?.scene.getScene('GameScene') as GameScene | undefined;
+      console.log('[App] Scene retrieved:', scene ? 'found' : 'null');
+      
+      if (scene) {
+        sceneRef.current = scene;
+        const state = gameEngine.getState();
+        console.log('[App] Calling scene.updateState...');
+        if (state) {
+          scene.updateState(state);
+          console.log('[App] scene.updateState called successfully');
+        }
       }
-    }
+    });
 
+    // Periodic sync as backup
     const unsubscribe = setInterval(() => {
       const state = gameEngine.getState();
       if (sceneRef.current && state) {
@@ -102,6 +111,7 @@ export function App() {
     console.log('[App] started=true');
 
     return () => {
+      unsubscribeSceneReady();
       clearInterval(unsubscribe);
       if (gameRef.current) {
         gameRef.current.destroy(true);

@@ -3,6 +3,7 @@ import { Position, PlayerId, GamePhase, CombatResult, Unit, Building } from './t
 type EventCallback<T = unknown> = (payload: T) => void;
 
 interface EventMap {
+  SCENE_READY: void;
   PHASE_CHANGE: { from: GamePhase; to: GamePhase };
   UNIT_SELECTED: { unitId: string; unit: Unit };
   UNIT_DESELECTED: { unitId: string };
