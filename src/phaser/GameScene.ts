@@ -20,7 +20,7 @@ const COLORS = {
   SELECTED: 0xffff00,
   UNIT_ALLY: 0x4488ff,
   UNIT_ENEMY: 0xff4444,
-  BUILDING_NEUTRAL: 0x888888,
+  BUILDING_NEUTRAL: 0xffff00,
 };
 
 export class GameScene extends Phaser.Scene {
@@ -331,8 +331,10 @@ export class GameScene extends Phaser.Scene {
 
   private renderBuildings(state: GameState): void {
     this.buildingGraphics.clear();
+    console.log('[renderBuildings] Starting render, building count:', state.buildings.size);
 
     for (const building of state.buildings.values()) {
+      console.log('[renderBuildings] Rendering building:', building.id, 'at', building.position, 'type:', building.buildingType);
       const centerX = building.position.x * TILE_SIZE + TILE_SIZE / 2;
       const centerY = building.position.y * TILE_SIZE + TILE_SIZE / 2;
       const size = TILE_SIZE * 0.4;
