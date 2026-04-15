@@ -9,6 +9,7 @@ import {
   GamePhase,
   Unit,
   Building,
+  BuildingType,
   Position,
   Tile,
   MapData,
@@ -19,7 +20,7 @@ import {
 import { eventBus } from './events';
 import { unitRegistry, terrainRegistry, initializeArmorClasses } from './registry';
 import { getReachableTiles, findPath } from './movement';
-import { calculateDamage, canRetaliate, getValidTargets } from './combat';
+import { calculateDamage, canRetaliate, getValidTargets, getBestRetaliationWeapon } from './combat';
 
 // ============================================================================
 // INSTANCE ID GENERATION
@@ -60,15 +61,19 @@ export function createInitialState(mapData: MapData): GameState {
   const units = new Map<string, Unit>();
   const buildings = new Map<string, Building>();
 
-  // Create buildings from map data
-  // Buildings are tracked in the buildings Map, but tile content is NOT set
-  // (units will be placed on building tiles and overwrite any building content)
+  // Create Wargroove-style buildings from map data
+  // Buildings are separate entities with HP, not embedded in terrain
   
+  const BUILDING_HP: Record<BuildingType, number> = {
+    hq: 20,
+    factory: 15,
+    city: 10,
+  };
+
   // First pass: determine which player each HQ belongs to based on proximity to starting units
   const hqOwnership = new Map<string, PlayerId | null>();
   for (const buildingData of mapData.buildings) {
-    if (buildingData.terrainId === 'hq') {
-      // Find the closest player 1 and player 2 units
+    if (buildingData.buildingType === 'hq') {
       let closestPlayer1Dist = Infinity;
       let closestPlayer2Dist = Infinity;
       
@@ -78,29 +83,26 @@ export function createInitialState(mapData: MapData): GameState {
         if (unitData.owner === 1 && dist < closestPlayer1Dist) {
           closestPlayer1Dist = dist;
         }
-        if (unitData.owner === 2 && dist < closestPlayer2Dist) {
+        if (unitData.owner === 2 && dist <closestPlayer2Dist) {
           closestPlayer2Dist = dist;
         }
       }
       
-      // HQ belongs to whichever player is closer
       const buildingId = `building_${buildingData.position.x}_${buildingData.position.y}`;
-      if (closestPlayer1Dist <= closestPlayer2Dist) {
-        hqOwnership.set(buildingId, 1);
-      } else {
-        hqOwnership.set(buildingId, 2);
-      }
+      hqOwnership.set(buildingId, closestPlayer1Dist <= closestPlayer2Dist ? 1 : 2);
     }
   }
   
   for (const buildingData of mapData.buildings) {
     const buildingId = `building_${buildingData.position.x}_${buildingData.position.y}`;
+    const maxHp = BUILDING_HP[buildingData.buildingType];
     const building: Building = {
       id: buildingId,
-      terrainId: buildingData.terrainId,
+      buildingType: buildingData.buildingType,
       position: buildingData.position,
-      owner: hqOwnership.get(buildingId) || null, // HQ ownership determined above, others neutral
-      captureProgress: 0,
+      owner: hqOwnership.get(buildingId) || null,
+      maxHp,
+      hp: maxHp,
     };
 
     buildings.set(buildingId, building);
@@ -239,14 +241,16 @@ class GameEngine {
       }
     }
 
-    // Calculate income from owned buildings
+    // Calculate income from owned buildings (Wargroove-style: based on building type)
+    const BUILDING_INCOME: Record<BuildingType, number> = {
+      hq: 1000,
+      factory: 500,
+      city: 250,
+    };
     let income = 0;
     for (const building of this.state.buildings.values()) {
       if (building.owner === player) {
-        const terrain = terrainRegistry.get(building.terrainId);
-        if (terrain) {
-          income += terrain.income_per_turn;
-        }
+        income += BUILDING_INCOME[building.buildingType];
       }
     }
 
@@ -700,10 +704,8 @@ class GameEngine {
     let attackerDestroyed: boolean | undefined;
 
     if (!defenderDestroyed && canRetaliate(defender, attacker, defender.position, this.state!)) {
-      const defenderDef = unitRegistry.get(defender.definitionId);
-      if (defenderDef) {
-        // Use secondary weapon if available, otherwise primary
-        const retaliationWeapon = defenderDef.weapons.secondary || defenderDef.weapons.primary;
+      const retaliationWeapon = getBestRetaliationWeapon(defender, attacker, this.state!);
+      if (retaliationWeapon) {
         retaliationDamage = calculateDamage(defender, attacker, retaliationWeapon, defender.position, this.state!);
 
         // Apply retaliation damage
@@ -807,32 +809,44 @@ class GameEngine {
       if (unit.owner === 2) player2Units++;
     }
 
-    // Check HQ capture status
+    // Check HQ destruction status (Wargroove-style: destroyed when HP = 0)
     for (const building of this.state.buildings.values()) {
-      const terrain = terrainRegistry.get(building.terrainId);
-      if (terrain && terrain.id === 'hq') {
-        // HQ is "destroyed" when fully captured by enemy
-        if (building.owner === 1 && building.captureProgress >= 100) {
-          player2HqDestroyed = true; // Player 2 captured Player 1's HQ
+      if (building.buildingType === 'hq') {
+        if (building.hp <= 0 && building.owner === 1) {
+          player1HqDestroyed = true; // Player 1's HQ destroyed
         }
-        if (building.owner === 2 && building.captureProgress >= 100) {
-          player1HqDestroyed = true; // Player 1 captured Player 2's HQ
+        if (building.hp <= 0 && building.owner === 2) {
+          player2HqDestroyed = true; // Player 2's HQ destroyed
         }
       }
     }
 
-    // Check win conditions
-    if (player2Units === 0 || player2HqDestroyed) {
+    // Check win conditions: lose if your HQ is destroyed
+    if (player1HqDestroyed) {
+      this.state.winner = 2;
+      this.setPhase('GAME_OVER');
+      eventBus.emit('GAME_OVER', { winner: 2 });
+      return;
+    }
+
+    if (player2HqDestroyed) {
       this.state.winner = 1;
       this.setPhase('GAME_OVER');
       eventBus.emit('GAME_OVER', { winner: 1 });
       return;
     }
 
-    if (player1Units === 0 || player1HqDestroyed) {
+    if (player1Units === 0) {
       this.state.winner = 2;
       this.setPhase('GAME_OVER');
       eventBus.emit('GAME_OVER', { winner: 2 });
+      return;
+    }
+
+    if (player2Units === 0) {
+      this.state.winner = 1;
+      this.setPhase('GAME_OVER');
+      eventBus.emit('GAME_OVER', { winner: 1 });
       return;
     }
   }

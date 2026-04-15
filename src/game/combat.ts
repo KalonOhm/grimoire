@@ -111,6 +111,39 @@ export function canTarget(
 }
 
 /**
+ * Get the best weapon for retaliation against a target.
+ * Picks the weapon with higher damage against the target's armor class.
+ */
+export function getBestRetaliationWeapon(
+  defender: Unit,
+  target: Unit,
+  gameState: GameState
+): Weapon | undefined {
+  const defenderDef = unitRegistry.get(defender.definitionId);
+  if (!defenderDef) return undefined;
+
+  const targetDef = unitRegistry.get(target.definitionId);
+  if (!targetDef) return undefined;
+
+  const targetArmor = targetDef.armor as ArmorClass;
+  const primary = defenderDef.weapons.primary;
+  const secondary = defenderDef.weapons.secondary;
+
+  const primaryDamage = primary?.damage_vs_armor[targetArmor] ?? -1;
+  const secondaryDamage = secondary?.damage_vs_armor[targetArmor] ?? -1;
+
+  // Prefer weapon with higher damage that can actually target (damage >= 0)
+  if (secondaryDamage >= 0 && secondaryDamage > primaryDamage) {
+    return secondary;
+  }
+  if (primaryDamage >= 0) {
+    return primary;
+  }
+
+  return undefined;
+}
+
+/**
  * Get all valid targets for a weapon from a position.
  * Filters by:
  * 1. Target is enemy

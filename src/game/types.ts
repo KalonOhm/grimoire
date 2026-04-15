@@ -160,7 +160,7 @@ export interface Unit {
 // Terrain ID used in map data
 export type TerrainId =
   | 'plains' | 'forest' | 'mountain' | 'road' | 'river' | 'bridge'
-  | 'hq' | 'factory' | 'city' | 'ruins' | 'water' | 'impassable';
+  | 'ruins' | 'water' | 'impassable';
 
 // Terrain type definition with all gameplay effects
 export interface TerrainType {
@@ -177,17 +177,18 @@ export interface TerrainType {
   movement_cost: Partial<Record<MovementType, number>>;
   
   blocks_movement: boolean;  // Always impassable (water, mountains)
-  can_capture: boolean;      // Can be captured by infantry
-  income_per_turn: number;   // Credits generated per turn when owned
 }
 
-// Building on the map (HQ, factory, city)
+// Wargroove-style building (HQ, factory, city) - separate entity with HP
+export type BuildingType = 'hq' | 'factory' | 'city';
+
 export interface Building {
   id: string;
-  terrainId: TerrainId;
+  buildingType: BuildingType;
   position: Position;
   owner: PlayerId | null;  // null = neutral
-  captureProgress: number;  // 0-100 capture progress
+  maxHp: number;
+  hp: number;
 }
 
 // ============================================================================
@@ -229,7 +230,7 @@ export interface MapData {
   
   // Initial building placements
   buildings: Array<{
-    terrainId: TerrainId;
+    buildingType: BuildingType;
     position: Position;
   }>;
 }
