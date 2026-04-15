@@ -486,10 +486,25 @@ class GameEngine {
     const definition = unitRegistry.get(unit.definitionId);
     if (!definition) return;
 
+    // Check destination - cannot move onto building tiles (Wargroove-style: interact from adjacent)
+    const destContent = this.state.map[destination.y]?.[destination.x]?.content;
+    if (destContent?.type === 'building') {
+      this.hideMovePreview();
+      return;
+    }
+
     const oldPosition = { ...unit.position };
 
-    // Clear old position
-    this.state.map[oldPosition.y][oldPosition.x].content = { type: 'empty' };
+    // Check if old position had a building - restore building content if so
+    const oldBuilding = this.state.buildings.get(`building_${oldPosition.x}_${oldPosition.y}`);
+    if (oldBuilding) {
+      this.state.map[oldPosition.y][oldPosition.x].content = {
+        type: 'building',
+        buildingId: oldBuilding.id,
+      };
+    } else {
+      this.state.map[oldPosition.y][oldPosition.x].content = { type: 'empty' };
+    }
 
     // Update unit position
     unit.position = destination;

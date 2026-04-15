@@ -92,21 +92,21 @@ export class GameScene extends Phaser.Scene {
       this.handleTileClick(position);
     });
 
-    this.input.keyboard?.on('keydown-ESCAPE', () => {
-      this.handleCancel();
-    });
-
-    this.input.keyboard?.on('keydown-SPACE', () => {
-      if (this.state?.phase === 'UNIT_SELECTED') {
-        gameEngine.endUnitTurn();
-      }
-    });
-
-    this.input.keyboard?.on('keydown-ENTER', () => {
-      if (this.state && this.state.phase !== 'GAME_OVER') {
-        gameEngine.endTurn();
-      }
-    });
+    // Keyboard controls - issues with Phaser 4 input, commented out until fixed
+    // TODO: Fix keyboard event handling in Phaser 4
+    // this.input.keyboard?.on('keydown-ESCAPE', () => {
+    //   this.handleCancel();
+    // });
+    // this.input.keyboard?.on('keydown-SPACE', () => {
+    //   if (this.state?.phase === 'UNIT_SELECTED') {
+    //     gameEngine.endUnitTurn();
+    //   }
+    // });
+    // this.input.keyboard?.on('keydown-ENTER', () => {
+    //   if (this.state && this.state.phase !== 'GAME_OVER') {
+    //     gameEngine.endTurn();
+    //   }
+    // });
   }
 
   private handleTileClick(position: Position): void {
@@ -175,26 +175,6 @@ export class GameScene extends Phaser.Scene {
         }
         break;
       }
-    }
-  }
-
-  private handleCancel(): void {
-    if (!this.state) return;
-
-    switch (this.state.phase) {
-      case 'UNIT_SELECTED':
-        gameEngine.deselectUnit();
-        break;
-      case 'ACTION_PREVIEW_MOVE':
-        gameEngine.hideMovePreview();
-        break;
-      case 'ACTION_PREVIEW_ATTACK_FROM_CURRENT':
-      case 'ACTION_PREVIEW_ATTACK_AFTER_MOVE':
-        gameEngine.hideAttackPreview();
-        break;
-      case 'BUILDING_SELECTED':
-        gameEngine.deselectBuilding();
-        break;
     }
   }
 

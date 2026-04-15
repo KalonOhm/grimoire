@@ -1,12 +1,17 @@
 # GrimWars TODO - Deferred Features
 
 ## Building Fixes
-- [ ] ESC key deselects buildings (BUILDING_SELECTED phase handler)
+- [x] Prevent units from moving onto building tiles (done)
+- [x] Building selection and highlighting (done)
+- [ ] Restore building content when unit moves off (done for executeMove)
 - [ ] Hover panel shows building (HP, type, owner) not terrain when tile has building
-- [ ] Prevent units from moving onto building tiles
+
+## Keyboard Controls (Known Issue)
+- Phaser 4 keyboard events not firing - TODO: Fix or remove
+- Removed commented keyboard code, using mouse-only for now
+- Need cancel buttons in action menus instead
 
 ## Building Actions
-- [x] Building selection and highlighting (done)
 - [ ] Capture: Infantry adjacent to neutral building (instant, 1 action)
 - [ ] Attack: Any unit adjacent to enemy building (building retaliates with light infantry damage)
 - [ ] Repair: Any unit adjacent to friendly building (restore to full HP)
