@@ -54,7 +54,7 @@ export function HoverInfoPanel({ state, hoveredTile }: HoverInfoPanelProps) {
 
   return (
     <div className="hover-info-panel">
-      {/* Unit info on top */}
+      {/* Unit OR Building info on top (unit takes priority) */}
       {unit && unitDef && (
         <div className="hover-info-section">
           <div className="hover-info-row">
@@ -77,8 +77,26 @@ export function HoverInfoPanel({ state, hoveredTile }: HoverInfoPanelProps) {
           </div>
         </div>
       )}
+      {building && !unit && (
+        <div className="hover-info-section">
+          <div className="hover-info-row">
+            <span className="hover-info-label">Building:</span>
+            <span className="hover-info-value">{building.buildingType.toUpperCase()}</span>
+          </div>
+          <div className="hover-info-row">
+            <span className="hover-info-label">HP:</span>
+            <span className="hover-info-value">{building.hp}/{building.maxHp}</span>
+          </div>
+          <div className="hover-info-row">
+            <span className="hover-info-label">Owner:</span>
+            <span className="hover-info-value">
+              {building.owner === null ? 'Neutral' : `Player ${building.owner}`}
+            </span>
+          </div>
+        </div>
+      )}
 
-      {/* Terrain/Building info below */}
+      {/* Terrain info always below */}
       <div className="hover-info-section">
         <div className="hover-info-row">
           <span className="hover-info-label">Terrain:</span>
@@ -88,24 +106,6 @@ export function HoverInfoPanel({ state, hoveredTile }: HoverInfoPanelProps) {
           <span className="hover-info-label">Defense:</span>
           <span className="hover-info-value">{defense}%</span>
         </div>
-        {building && (
-          <>
-            <div className="hover-info-row">
-              <span className="hover-info-label">Building:</span>
-              <span className="hover-info-value">{building.buildingType.toUpperCase()}</span>
-            </div>
-            <div className="hover-info-row">
-              <span className="hover-info-label">HP:</span>
-              <span className="hover-info-value">{building.hp}/{building.maxHp}</span>
-            </div>
-            <div className="hover-info-row">
-              <span className="hover-info-label">Owner:</span>
-              <span className="hover-info-value">
-                {building.owner === null ? 'Neutral' : `Player ${building.owner}`}
-              </span>
-            </div>
-          </>
-        )}
       </div>
     </div>
   );
