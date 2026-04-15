@@ -396,20 +396,75 @@ function ActionPanel({
   );
 }
 
+function BuildingActionPanel({
+  building,
+  boardWidth
+}: {
+  building: { id: string; buildingType: string; position: Position; owner: number | null };
+  boardWidth: number;
+}) {
+  const buildingScreenX = building.position.x * TILE_SIZE + TILE_SIZE / 2;
+  const buildingScreenY = building.position.y * TILE_SIZE + TILE_SIZE / 2;
+
+  const isRightSide = buildingScreenX < boardWidth / 2;
+
+  let panelLeft: number;
+  if (isRightSide) {
+    panelLeft = buildingScreenX + PANEL_OFFSET;
+  } else {
+    panelLeft = buildingScreenX - PANEL_WIDTH - PANEL_OFFSET;
+  }
+
+  const panelTop = buildingScreenY;
+
+  const handleCancel = () => {
+    gameEngine.deselectBuilding();
+  };
+
+  return (
+    <div
+      className="action-panel"
+      style={{
+        position: 'absolute',
+        left: panelLeft,
+        top: panelTop,
+        transform: 'translateY(-50%)',
+      }}
+    >
+      <button className="cancel-btn" onClick={handleCancel}>Cancel</button>
+    </div>
+  );
+}
+
 function renderActionPanel() {
   const state = gameEngine.getState();
   if (!state) return null;
 
   const phase = state.phase;
-  if (phase !== 'UNIT_SELECTED' && phase !== 'UNIT_MOVED') return null;
+  
+  // Unit action panel
+  if (phase === 'UNIT_SELECTED' || phase === 'UNIT_MOVED') {
+    const selectedUnitId = state.selectedUnitId;
+    if (!selectedUnitId) return null;
 
-  const selectedUnitId = state.selectedUnitId;
-  if (!selectedUnitId) return null;
+    const unit = state.units.get(selectedUnitId);
+    if (!unit || unit.hasActed) return null;
 
-  const unit = state.units.get(selectedUnitId);
-  if (!unit || unit.hasActed) return null;
+    const boardWidth = (state.map[0]?.length || 0) * TILE_SIZE;
+    return <ActionPanel unit={unit} boardWidth={boardWidth} />;
+  }
+  
+  // Building action panel
+  if (phase === 'BUILDING_SELECTED') {
+    const selectedBuildingId = state.selectedBuildingId;
+    if (!selectedBuildingId) return null;
 
-  const boardWidth = (state.map[0]?.length || 0) * TILE_SIZE;
+    const building = state.buildings.get(selectedBuildingId);
+    if (!building) return null;
 
-  return <ActionPanel unit={unit} boardWidth={boardWidth} />;
+    const boardWidth = (state.map[0]?.length || 0) * TILE_SIZE;
+    return <BuildingActionPanel building={building} boardWidth={boardWidth} />;
+  }
+
+  return null;
 }

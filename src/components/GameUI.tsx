@@ -14,6 +14,18 @@ export function GameUI() {
     gameEngine.endTurn();
   };
 
+  const handleCancel = () => {
+    const state = gameEngine.getState();
+    if (!state) return;
+    
+    // Deselect based on current phase
+    if (state.selectedUnitId) {
+      gameEngine.deselectUnit();
+    } else if (state.selectedBuildingId) {
+      gameEngine.deselectBuilding();
+    }
+  };
+
   return (
     <div className="game-ui">
       <div className="top-bar">
@@ -32,15 +44,22 @@ export function GameUI() {
         <div className="phase-indicator">
           Phase: {phase.replace(/_/g, ' ')}
         </div>
-        <div className="controls">
-          <button 
-            className="end-turn-btn" 
-            onClick={handleEndTurn}
-            disabled={phase === 'GAME_OVER'}
-          >
-            End Turn
-          </button>
-        </div>
+<div className="controls">
+            <button 
+              className="cancel-btn" 
+              onClick={handleCancel}
+              disabled={phase === 'IDLE' || phase === 'GAME_OVER'}
+            >
+              Cancel
+            </button>
+            <button 
+              className="end-turn-btn" 
+              onClick={handleEndTurn}
+              disabled={phase === 'GAME_OVER'}
+            >
+              End Turn
+            </button>
+          </div>
       </div>
 
       {winner && (
@@ -60,9 +79,6 @@ export function GameUI() {
         <h4>Controls</h4>
         <ul>
           <li><kbd>Click</kbd> - Select unit / building / action</li>
-          <li><kbd>ESC</kbd> - Cancel / Deselect</li>
-          <li><kbd>Space</kbd> - End unit turn (wait)</li>
-          <li><kbd>Enter</kbd> - End turn</li>
         </ul>
       </div>
     </div>
