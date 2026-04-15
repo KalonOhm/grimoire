@@ -106,6 +106,14 @@ export function createInitialState(mapData: MapData): GameState {
     };
 
     buildings.set(buildingId, building);
+
+    // Update tile content to show building
+    if (map[buildingData.position.y] && map[buildingData.position.y][buildingData.position.x]) {
+      map[buildingData.position.y][buildingData.position.x].content = {
+        type: 'building',
+        buildingId: buildingId,
+      };
+    }
   }
 
   // Create units from map data (placed AFTER buildings so they overwrite building tiles)
