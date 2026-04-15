@@ -144,6 +144,38 @@ export function getBestRetaliationWeapon(
 }
 
 /**
+ * Get the best weapon to attack a specific target.
+ * Returns the weapon with highest damage vs target's armor.
+ */
+export function getBestWeaponForTarget(
+  attacker: Unit,
+  target: Unit
+): Weapon | undefined {
+  const attackerDef = unitRegistry.get(attacker.definitionId);
+  if (!attackerDef) return undefined;
+
+  const targetDef = unitRegistry.get(target.definitionId);
+  if (!targetDef) return undefined;
+
+  const targetArmor = targetDef.armor as ArmorClass;
+  const primary = attackerDef.weapons.primary;
+  const secondary = attackerDef.weapons.secondary;
+
+  const primaryDamage = primary?.damage_vs_armor[targetArmor] ?? -1;
+  const secondaryDamage = secondary?.damage_vs_armor[targetArmor] ?? -1;
+
+  // Prefer weapon with higher damage
+  if (secondaryDamage >= 0 && secondaryDamage > primaryDamage) {
+    return secondary;
+  }
+  if (primaryDamage >= 0) {
+    return primary;
+  }
+
+  return undefined;
+}
+
+/**
  * Get all valid targets for a weapon from a position.
  * Filters by:
  * 1. Target is enemy
@@ -157,19 +189,54 @@ export function getValidTargets(
   gameState: GameState
 ): Unit[] {
   const targets: Unit[] = [];
-
+  
   for (const unit of gameState.units.values()) {
-    // Skip friendly units
+    // Skip own units
     if (unit.owner === attacker.owner) continue;
-
-    // Check range
-    if (!isInRange(fromPosition, unit.position, weapon)) continue;
-
-    // Check if weapon can target this armor class
+    
+    // Check if can target this armor class
     if (!canTarget(attacker, unit, weapon, gameState)) continue;
-
+    
+    // Check if in range
+    if (!isInRange(fromPosition, unit.position, weapon)) continue;
+    
     targets.push(unit);
   }
+  
+  return targets;
+}
+
+/**
+ * Get all valid targets using either primary or secondary weapon.
+ * Returns units that can be attacked with either weapon.
+ */
+export function getAllValidTargetsInRange(
+  attacker: Unit,
+  fromPosition: Position,
+  gameState: GameState
+): Unit[] {
+  const attackerDef = unitRegistry.get(attacker.definitionId);
+  if (!attackerDef) return [];
+
+  const primary = attackerDef.weapons.primary;
+  const secondary = attackerDef.weapons.secondary;
+
+  const primaryTargets = primary ? getValidTargets(attacker, primary, fromPosition, gameState) : [];
+  const secondaryTargets = secondary ? getValidTargets(attacker, secondary, fromPosition, gameState) : [];
+
+  // Combine and deduplicate by unit ID
+  const targetMap = new Map<string, Unit>();
+  for (const unit of primaryTargets) {
+    targetMap.set(unit.instanceId, unit);
+  }
+  for (const unit of secondaryTargets) {
+    if (!targetMap.has(unit.instanceId)) {
+      targetMap.set(unit.instanceId, unit);
+    }
+  }
+
+  return Array.from(targetMap.values());
+}
 
   return targets;
 }
@@ -245,12 +312,15 @@ function getTerrainDefense(position: Position, gameState: GameState): number {
  * @param gameState - Current game state (for terrain lookup)
  * @returns Final damage to apply
  */
+const ATTACKER_BONUS = 1.2; // 20% bonus for attacker (first strike advantage)
+
 export function calculateDamage(
   attacker: Unit,
   defender: Unit,
   weapon: Weapon,
   fromPosition: Position,
-  gameState: GameState
+  gameState: GameState,
+  isRetaliation: boolean = false
 ): number {
   const defenderDef = unitRegistry.get(defender.definitionId);
   if (!defenderDef) return 0;
@@ -274,7 +344,12 @@ export function calculateDamage(
   const defenseReduction = terrainDefense / 100;
   damage = damage * (1 - defenseReduction);
 
-  // Step 5: Floor to integer and enforce minimum
+  // Step 5: Attacker bonus (first strike advantage) - not applied to retaliation
+  if (!isRetaliation) {
+    damage = damage * ATTACKER_BONUS;
+  }
+
+  // Step 6: Floor to integer and enforce minimum
   const finalDamage = Math.floor(damage);
 
   // Minimum damage rule: at least 1 if any damage was calculated

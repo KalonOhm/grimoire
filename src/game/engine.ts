@@ -20,7 +20,7 @@ import {
 import { eventBus } from './events';
 import { unitRegistry, terrainRegistry, initializeArmorClasses } from './registry';
 import { getReachableTiles, findPath } from './movement';
-import { calculateDamage, canRetaliate, getValidTargets, getBestRetaliationWeapon } from './combat';
+import { calculateDamage, canRetaliate, getValidTargets, getBestRetaliationWeapon, getBestWeaponForTarget, getAllValidTargetsInRange } from './combat';
 
 // ============================================================================
 // INSTANCE ID GENERATION
@@ -534,8 +534,8 @@ class GameEngine {
     const definition = unitRegistry.get(unit.definitionId);
     if (!definition) return;
 
-    // Get all valid targets in range
-    const targetUnits = getValidTargets(unit, definition.weapons.primary, unit.position, this.state);
+    // Get all valid targets in range (using either weapon)
+    const targetUnits = getAllValidTargetsInRange(unit, unit.position, this.state);
     // Transform to event format
     const targets = targetUnits.map(u => ({ unitId: u.instanceId, position: u.position }));
 
@@ -578,8 +578,8 @@ class GameEngine {
       return;
     }
 
-    // Get targets from new position
-    const targetUnits = getValidTargets(unit, definition.weapons.primary, position, this.state);
+    // Get targets from new position (using either weapon)
+    const targetUnits = getAllValidTargetsInRange(unit, position, this.state);
     const targets = targetUnits.map(u => ({ unitId: u.instanceId, position: u.position }));
 
     // If no targets in range, go to post-move action phase
@@ -691,8 +691,8 @@ class GameEngine {
     weapon: { damage_vs_armor: Record<string, number>; range_penalty_multiplier: number; min_range: number; max_range: number; uses_ammo: boolean },
     fromPosition: Position
   ): CombatResult {
-    // Calculate primary damage
-    const damageDealt = calculateDamage(attacker, defender, weapon as any, fromPosition, this.state!);
+    // Calculate primary damage (attacker has first-strike bonus)
+    const damageDealt = calculateDamage(attacker, defender, weapon as any, fromPosition, this.state!, false);
 
     // Apply damage to defender
     const defenderAfterDamage = Math.max(0, defender.currentHp - damageDealt);
@@ -706,7 +706,7 @@ class GameEngine {
     if (!defenderDestroyed && canRetaliate(defender, attacker, defender.position, this.state!)) {
       const retaliationWeapon = getBestRetaliationWeapon(defender, attacker, this.state!);
       if (retaliationWeapon) {
-        retaliationDamage = calculateDamage(defender, attacker, retaliationWeapon, defender.position, this.state!);
+        retaliationDamage = calculateDamage(defender, attacker, retaliationWeapon, defender.position, this.state!, true);
 
         // Apply retaliation damage
         const attackerAfterRetaliation = Math.max(0, attacker.currentHp - retaliationDamage);
@@ -910,15 +910,17 @@ class GameEngine {
     const attackerDef = unitRegistry.get(attacker.definitionId);
     if (!attackerDef) return null;
 
-    const weapon = attackerDef.weapons.primary;
+    const weapon = getBestWeaponForTarget(attacker, defender);
+    if (!weapon) return null;
 
-    // Calculate attacker damage
+    // Calculate attacker damage (with first-strike bonus)
     const attackerDamage = calculateDamage(
       attacker,
       defender,
       weapon,
       attacker.position,
-      this.state
+      this.state,
+      false
     );
 
     // Check if defender can retaliate (using defender's current HP)
@@ -927,13 +929,8 @@ class GameEngine {
     let defenderRetaliation: number | null = null;
 
     if (defenderCanRetaliate) {
-      // Calculate retaliation damage using defender's HP after being hit
-      const defenderDef = unitRegistry.get(defender.definitionId);
-      if (defenderDef) {
-        const retaliationWeapon = defenderDef.weapons.secondary
-          ? defenderDef.weapons.secondary
-          : defenderDef.weapons.primary;
-
+      const retaliationWeapon = getBestRetaliationWeapon(defender, attacker, this.state);
+      if (retaliationWeapon) {
         // Create a copy of defender with reduced HP for retaliation calculation
         const defenderAfterHit: Unit = {
           ...defender,
@@ -945,7 +942,8 @@ class GameEngine {
           attacker,
           retaliationWeapon,
           defender.position,
-          this.state
+          this.state,
+          true
         );
       }
     }
