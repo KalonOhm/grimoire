@@ -162,7 +162,6 @@
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow: 0 0 15px rgba(255, 68, 68, 0.3);
-  margin-right: 8px;
 }
 
 .cancel-btn:hover:not(:disabled) {

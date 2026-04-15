@@ -49,6 +49,7 @@ export function GameUI() {
               className="cancel-btn" 
               onClick={handleCancel}
               disabled={phase === 'IDLE' || phase === 'GAME_OVER'}
+              style={{ marginRight: '8px' }}
             >
               Cancel
             </button>
