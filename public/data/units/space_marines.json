@@ -30,7 +30,7 @@
         "range_penalty_multiplier": 0.6,
         "damage_vs_armor": {
           "light_infantry": 55,
-          "heavy_infantry": 45,
+          "heavy_infantry": 40,
           "super_heavy_infantry": 25,
           "light_vehicle": 30,
           "medium_vehicle": 15,
@@ -108,9 +108,9 @@
         "fire_after_move": true,
         "range_penalty_multiplier": 1.0,
         "damage_vs_armor": {
-          "light_infantry": 80,
-          "heavy_infantry": 65,
-          "super_heavy_infantry": 35,
+          "light_infantry": 70,
+          "heavy_infantry": 55,
+          "super_heavy_infantry": 30,
           "light_vehicle": 25,
           "medium_vehicle": 15,
           "heavy_vehicle": 5,
@@ -156,12 +156,12 @@
         "fire_after_move": true,
         "range_penalty_multiplier": 0.8,
         "damage_vs_armor": {
-          "light_infantry": 70,
-          "heavy_infantry": 60,
-          "super_heavy_infantry": 50,
-          "light_vehicle": 75,
-          "medium_vehicle": 65,
-          "heavy_vehicle": 45,
+          "light_infantry": 60,
+          "heavy_infantry": 50,
+          "super_heavy_infantry": 40,
+          "light_vehicle": 65,
+          "medium_vehicle": 55,
+          "heavy_vehicle": 40,
           "fortification": 25,
           "aircraft": 15
         }
@@ -222,13 +222,13 @@
         "fire_after_move": false,
         "range_penalty_multiplier": 1.0,
         "damage_vs_armor": {
-          "light_infantry": 85,
-          "heavy_infantry": 75,
-          "super_heavy_infantry": 60,
-          "light_vehicle": 65,
-          "medium_vehicle": 45,
-          "heavy_vehicle": 25,
-          "fortification": 50,
+          "light_infantry": 75,
+          "heavy_infantry": 65,
+          "super_heavy_infantry": 50,
+          "light_vehicle": 55,
+          "medium_vehicle": 40,
+          "heavy_vehicle": 20,
+          "fortification": 45,
           "aircraft": -1
         }
       }

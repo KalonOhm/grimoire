@@ -160,7 +160,7 @@ export interface Unit {
 // Terrain ID used in map data
 export type TerrainId =
   | 'plains' | 'forest' | 'mountain' | 'road' | 'river' | 'bridge'
-  | 'hq' | 'factory' | 'city' | 'water' | 'impassable';
+  | 'hq' | 'factory' | 'city' | 'ruins' | 'water' | 'impassable';
 
 // Terrain type definition with all gameplay effects
 export interface TerrainType {
@@ -246,6 +246,7 @@ export type GamePhase =
   | 'TURN_START'                             // Start of turn processing
   | 'IDLE'                                   // No selection, waiting for input
   | 'UNIT_SELECTED'                          // Unit selected, showing actions
+  | 'UNIT_MOVED'                             // Unit has moved, showing post-move actions
   | 'ACTION_PREVIEW_MOVE'                    // Showing movement range
   | 'ACTION_PREVIEW_ATTACK_FROM_CURRENT'    // Showing attack targets from current position
   | 'ACTION_PREVIEW_ATTACK_AFTER_MOVE'      // Showing attack targets from destination
@@ -320,4 +321,11 @@ export interface CombatResult {
   defenderDestroyed: boolean;
   retaliationDamage?: number;
   attackerDestroyed?: boolean;
+}
+
+// Preview of combat without applying damage (for UI display)
+export interface CombatPreview {
+  attackerDamage: number;      // Damage attacker will deal
+  defenderRetaliation: number | null;  // Damage defender will retaliate, or null if no retaliation
+  poorTrade: boolean;         // True if retaliation > attacker damage
 }

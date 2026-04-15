@@ -36,6 +36,15 @@ export class GameScene extends Phaser.Scene {
   }
 
   create(): void {
+    console.log('[GameScene] Canvas size:', this.cameras.main.width, 'x', this.cameras.main.height);
+    console.log('[GameScene] World size:', this.cameras.main.width, 'x', this.cameras.main.height);
+
+    // DEBUG: Simple red rectangle to verify Graphics API works
+    const debug = this.add.graphics();
+    debug.fillStyle(0xff0000, 1);
+    debug.fillRect(50, 50, 200, 200);
+    console.log('[GameScene] Debug rectangle created at (50,50) 200x200');
+
     // Create separate graphics layers
     this.tileGraphics = this.add.graphics();
     this.unitGraphics = this.add.graphics();

@@ -14,6 +14,7 @@ import {
   MapData,
   PlayerId,
   CombatResult,
+  CombatPreview,
 } from './types';
 import { eventBus } from './events';
 import { unitRegistry, terrainRegistry, initializeArmorClasses } from './registry';
@@ -59,7 +60,53 @@ export function createInitialState(mapData: MapData): GameState {
   const units = new Map<string, Unit>();
   const buildings = new Map<string, Building>();
 
-  // Create units from map data
+  // Create buildings from map data
+  // Buildings are tracked in the buildings Map, but tile content is NOT set
+  // (units will be placed on building tiles and overwrite any building content)
+  
+  // First pass: determine which player each HQ belongs to based on proximity to starting units
+  const hqOwnership = new Map<string, PlayerId | null>();
+  for (const buildingData of mapData.buildings) {
+    if (buildingData.terrainId === 'hq') {
+      // Find the closest player 1 and player 2 units
+      let closestPlayer1Dist = Infinity;
+      let closestPlayer2Dist = Infinity;
+      
+      for (const unitData of mapData.units) {
+        const dist = Math.abs(unitData.position.x - buildingData.position.x) + 
+                     Math.abs(unitData.position.y - buildingData.position.y);
+        if (unitData.owner === 1 && dist < closestPlayer1Dist) {
+          closestPlayer1Dist = dist;
+        }
+        if (unitData.owner === 2 && dist < closestPlayer2Dist) {
+          closestPlayer2Dist = dist;
+        }
+      }
+      
+      // HQ belongs to whichever player is closer
+      const buildingId = `building_${buildingData.position.x}_${buildingData.position.y}`;
+      if (closestPlayer1Dist <= closestPlayer2Dist) {
+        hqOwnership.set(buildingId, 1);
+      } else {
+        hqOwnership.set(buildingId, 2);
+      }
+    }
+  }
+  
+  for (const buildingData of mapData.buildings) {
+    const buildingId = `building_${buildingData.position.x}_${buildingData.position.y}`;
+    const building: Building = {
+      id: buildingId,
+      terrainId: buildingData.terrainId,
+      position: buildingData.position,
+      owner: hqOwnership.get(buildingId) || null, // HQ ownership determined above, others neutral
+      captureProgress: 0,
+    };
+
+    buildings.set(buildingId, building);
+  }
+
+  // Create units from map data (placed AFTER buildings so they overwrite building tiles)
   for (const unitData of mapData.units) {
     const definition = unitRegistry.get(unitData.definitionId);
     if (!definition) continue; // Skip if unit definition not found
@@ -84,33 +131,11 @@ export function createInitialState(mapData: MapData): GameState {
 
     units.set(instanceId, unit);
 
-    // Update tile content to show unit
+    // Update tile content to show unit (overwrites building if on same tile)
     if (map[unitData.position.y] && map[unitData.position.y][unitData.position.x]) {
       map[unitData.position.y][unitData.position.x].content = {
         type: 'unit',
         unitId: instanceId,
-      };
-    }
-  }
-
-  // Create buildings from map data
-  for (const buildingData of mapData.buildings) {
-    const buildingId = `building_${buildingData.position.x}_${buildingData.position.y}`;
-    const building: Building = {
-      id: buildingId,
-      terrainId: buildingData.terrainId,
-      position: buildingData.position,
-      owner: null, // Start neutral
-      captureProgress: 0,
-    };
-
-    buildings.set(buildingId, building);
-
-    // Update tile content to show building
-    if (map[buildingData.position.y] && map[buildingData.position.y][buildingData.position.x]) {
-      map[buildingData.position.y][buildingData.position.x].content = {
-        type: 'building',
-        buildingId,
       };
     }
   }
@@ -184,6 +209,12 @@ class GameEngine {
       this.processTurnStart();
     } else if (newPhase === 'TURN_END') {
       this.processTurnEnd();
+    } else if (newPhase === 'UNIT_SPENT') {
+      // Auto-transition from UNIT_SPENT back to IDLE
+      this.state.selectedUnitId = null;
+      this.state.movePreview = null;
+      this.state.attackPreview = null;
+      this.setPhase('IDLE');
     }
   }
 
@@ -440,6 +471,9 @@ class GameEngine {
     const unit = this.state.units.get(unitId);
     if (!unit) return;
 
+    const definition = unitRegistry.get(unit.definitionId);
+    if (!definition) return;
+
     const oldPosition = { ...unit.position };
 
     // Clear old position
@@ -463,6 +497,12 @@ class GameEngine {
     // Clear move preview
     this.state.movePreview = null;
 
+    // If unit cannot fire after moving, go to post-move action phase
+    if (!definition.weapons.primary.fire_after_move) {
+      this.setPhase('UNIT_MOVED');
+      return;
+    }
+
     // Show attack preview from new position (if weapon allows fire-after-move)
     this.showAttackPreviewAfterMove(destination);
   }
@@ -477,7 +517,8 @@ class GameEngine {
    */
   showAttackPreviewFromCurrent(): void {
     if (!this.state) return;
-    if (this.state.phase !== 'UNIT_SELECTED') return;
+    const validPhases = ['UNIT_SELECTED', 'UNIT_MOVED'];
+    if (!validPhases.includes(this.state.phase)) return;
 
     const unitId = this.state.selectedUnitId;
     if (!unitId) return;
@@ -493,6 +534,15 @@ class GameEngine {
     const targetUnits = getValidTargets(unit, definition.weapons.primary, unit.position, this.state);
     // Transform to event format
     const targets = targetUnits.map(u => ({ unitId: u.instanceId, position: u.position }));
+
+    // If no targets in range, go back to IDLE (unit can still move/act elsewhere)
+    if (targets.length === 0) {
+      this.state.selectedUnitId = null;
+      this.state.movePreview = null;
+      this.state.attackPreview = null;
+      this.setPhase('IDLE');
+      return;
+    }
 
     this.state.attackPreview = { targets };
 
@@ -519,14 +569,21 @@ class GameEngine {
 
     // Check if weapon allows fire-after-move
     if (!definition.weapons.primary.fire_after_move) {
-      // Can't fire after moving, go directly to UNIT_SELECTED
-      this.setPhase('UNIT_SELECTED');
+      // Can't fire after moving, go to UNIT_SPENT which auto-transitions to IDLE
+      this.setPhase('UNIT_SPENT');
       return;
     }
 
     // Get targets from new position
     const targetUnits = getValidTargets(unit, definition.weapons.primary, position, this.state);
     const targets = targetUnits.map(u => ({ unitId: u.instanceId, position: u.position }));
+
+    // If no targets in range, go to post-move action phase
+    if (targets.length === 0) {
+      this.state.attackPreview = null;
+      this.setPhase('UNIT_MOVED');
+      return;
+    }
 
     this.state.attackPreview = { targets };
 
@@ -547,9 +604,10 @@ class GameEngine {
     this.state.attackPreview = null;
 
     // Return to appropriate state based on how we got here
-    if (this.state.phase === 'ACTION_PREVIEW_ATTACK_FROM_CURRENT' ||
-        this.state.phase === 'ACTION_PREVIEW_ATTACK_AFTER_MOVE') {
+    if (this.state.phase === 'ACTION_PREVIEW_ATTACK_FROM_CURRENT') {
       this.setPhase('UNIT_SELECTED');
+    } else if (this.state.phase === 'ACTION_PREVIEW_ATTACK_AFTER_MOVE') {
+      this.setPhase('UNIT_MOVED');
     }
   }
 
@@ -690,7 +748,7 @@ class GameEngine {
   endUnitTurn(): void {
     if (!this.state) return;
     
-    const validPhases = ['UNIT_SELECTED', 'UNIT_SPENT'];
+    const validPhases = ['UNIT_SELECTED', 'UNIT_MOVED', 'UNIT_SPENT'];
     if (!validPhases.includes(this.state.phase)) return;
 
     const unitId = this.state.selectedUnitId;
@@ -813,10 +871,79 @@ class GameEngine {
 
   /** Get building at position, or null if no building there */
   getBuildingAt(position: Position): Building | null {
-    const tile = this.getTileAt(position);
-    if (!tile) return null;
-    if (tile.content.type !== 'building') return null;
-    return this.state!.buildings.get(tile.content.buildingId) || null;
+    // Check buildings Map for a building at this position
+    // (units overwrite tile content, so we can't rely on tile.content.type)
+    for (const building of this.state!.buildings.values()) {
+      if (building.position.x === position.x && building.position.y === position.y) {
+        return building;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Preview combat damage without applying it.
+   * Returns deterministic damage estimates for UI display.
+   */
+  previewCombat(attackerId: string, defenderId: string): CombatPreview | null {
+    if (!this.state) return null;
+
+    const attacker = this.state.units.get(attackerId);
+    const defender = this.state.units.get(defenderId);
+    
+    if (!attacker || !defender) return null;
+
+    const attackerDef = unitRegistry.get(attacker.definitionId);
+    if (!attackerDef) return null;
+
+    const weapon = attackerDef.weapons.primary;
+
+    // Calculate attacker damage
+    const attackerDamage = calculateDamage(
+      attacker,
+      defender,
+      weapon,
+      attacker.position,
+      this.state
+    );
+
+    // Check if defender can retaliate (using defender's current HP)
+    const defenderCanRetaliate = canRetaliate(defender, attacker, defender.position, this.state);
+
+    let defenderRetaliation: number | null = null;
+
+    if (defenderCanRetaliate) {
+      // Calculate retaliation damage using defender's HP after being hit
+      const defenderDef = unitRegistry.get(defender.definitionId);
+      if (defenderDef) {
+        const retaliationWeapon = defenderDef.weapons.secondary
+          ? defenderDef.weapons.secondary
+          : defenderDef.weapons.primary;
+
+        // Create a copy of defender with reduced HP for retaliation calculation
+        const defenderAfterHit: Unit = {
+          ...defender,
+          currentHp: Math.max(0, defender.currentHp - attackerDamage),
+        };
+
+        defenderRetaliation = calculateDamage(
+          defenderAfterHit,
+          attacker,
+          retaliationWeapon,
+          defender.position,
+          this.state
+        );
+      }
+    }
+
+    // Determine if it's a poor trade (retaliation > attacker damage)
+    const poorTrade = defenderRetaliation !== null && defenderRetaliation > attackerDamage;
+
+    return {
+      attackerDamage,
+      defenderRetaliation,
+      poorTrade,
+    };
   }
 }
 

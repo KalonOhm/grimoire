@@ -40,6 +40,7 @@ export function findPath(
 
   const moveType = definition.movement.type;
   const maxCost = definition.movement.points;
+  const isFly = moveType === 'fly';
 
   const openSet: PathNode[] = [];
   const closedSet = new Set<string>();
@@ -93,12 +94,19 @@ export function findPath(
 
       const tile = gameState.map[neighbor.y][neighbor.x];
 
-      if (tile.content.type === 'unit' && tile.content.unitId !== movingUnit.instanceId) {
+      // Fly units can pass through any unit (they fly over)
+      // Non-fly units are blocked by enemy units unless targeting them
+      if (!isFly && tile.content.type === 'unit' && tile.content.unitId !== movingUnit.instanceId) {
         const blockingUnit = gameState.units.get(tile.content.unitId);
         if (blockingUnit && blockingUnit.owner !== movingUnit.owner) {
+          // Can path through enemy to reach destination, but can't land on them
           if (neighbor.x !== to.x || neighbor.y !== to.y) {
             continue;
           }
+        }
+        // Friendly units always block (can't land on them)
+        if (blockingUnit && blockingUnit.owner === movingUnit.owner) {
+          continue;
         }
       }
 
@@ -144,6 +152,7 @@ export function getReachableTiles(
 
   const moveType = definition.movement.type;
   const maxCost = definition.movement.points;
+  const isFly = moveType === 'fly';
 
   const reachable: Position[] = [];
   const visited = new Map<string, number>();
@@ -159,7 +168,11 @@ export function getReachableTiles(
     const current = queue.shift()!;
 
     if (current.cost > 0) {
-      reachable.push(current.pos);
+      // Don't add to reachable if tile has another unit (can't land on occupied tile)
+      const currentTile = gameState.map[current.pos.y][current.pos.x];
+      if (currentTile.content.type !== 'unit' || currentTile.content.unitId === unit.instanceId) {
+        reachable.push(current.pos);
+      }
     }
 
     const neighbors: Position[] = [
@@ -181,14 +194,10 @@ export function getReachableTiles(
 
       const tile = gameState.map[neighbor.y][neighbor.x];
 
-      if (tile.content.type === 'unit') {
-        const blockingUnit = gameState.units.get(tile.content.unitId);
-        if (blockingUnit && blockingUnit.owner !== unit.owner) {
-          continue;
-        }
-        if (blockingUnit && blockingUnit.owner === unit.owner && tile.content.unitId !== unit.instanceId) {
-          continue;
-        }
+      // All units (including fly) cannot end on a tile with another unit
+      // Fly units can pass through (over) any unit when calculating path, but not land on them
+      if (!isFly && tile.content.type === 'unit' && tile.content.unitId !== unit.instanceId) {
+        continue;
       }
 
       const cost = getMovementCost(tile.terrainId, moveType);

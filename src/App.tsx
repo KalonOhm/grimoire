@@ -1,7 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
-import * as Phaser from 'phaser';
-import { GameScene } from './phaser/GameScene';
+import { useEffect, useState, useCallback } from 'react';
+import { GameState, Position } from './game/types';
+import { GameBoard } from './components/GameBoard';
 import { GameUI } from './components/GameUI';
+import { HoverInfoPanel } from './components/HoverInfoPanel';
+import { CombatPreviewPanel } from './components/CombatPreviewPanel';
 import { gameEngine } from './game/engine';
 import { eventBus } from './game/events';
 import { loadAllData } from './game/loader';
@@ -9,11 +11,17 @@ import { mapRegistry } from './game/registry';
 import './App.css';
 
 export function App() {
-  const gameRef = useRef<Phaser.Game | null>(null);
-  const sceneRef = useRef<GameScene | null>(null);
+  const [gameState, setGameState] = useState<GameState | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [started, setStarted] = useState(false);
+  const [hoveredTile, setHoveredTile] = useState<Position | null>(null);
+
+  const refreshState = useCallback(() => {
+    const state = gameEngine.getState();
+    if (state) {
+      setGameState({ ...state });
+    }
+  }, []);
 
   useEffect(() => {
     const initGame = async () => {
@@ -43,6 +51,8 @@ export function App() {
         
         const state = gameEngine.getState();
         console.log('[App] Game state initialized:', state ? `phase=${state.phase}, units=${state.units.size}` : 'null');
+        
+        setGameState(state);
 
         setLoading(false);
         console.log('[App] Loading complete, loading=false');
@@ -56,69 +66,36 @@ export function App() {
   }, []);
 
   useEffect(() => {
-    if (loading || error || started) return;
+    if (!gameState) return;
 
-    console.log('[App] Creating Phaser game...');
+    const events = [
+      'PHASE_CHANGE',
+      'UNIT_SELECTED',
+      'UNIT_DESELECTED',
+      'MOVE_PREVIEW_SHOWN',
+      'MOVE_PREVIEW_HIDDEN',
+      'ATTACK_PREVIEW_SHOWN',
+      'ATTACK_PREVIEW_HIDDEN',
+      'UNIT_MOVED',
+      'UNIT_ATTACKED',
+      'UNIT_DESTROYED',
+      'TURN_START',
+      'GAME_OVER',
+      'BUILDING_SELECTED',
+      'BUILDING_DESELECTED',
+    ];
 
-    const config: Phaser.Types.Core.GameConfig = {
-      type: Phaser.AUTO,
-      parent: 'game-container',
-      width: '100%',
-      height: '100%',
-      backgroundColor: '#1a1a2e',
-      scene: [GameScene],
-      scale: {
-        mode: Phaser.Scale.FIT,
-        autoCenter: Phaser.Scale.CENTER_BOTH,
-      },
-      input: {
-        keyboard: true,
-        mouse: true,
-      },
-    };
-
-    gameRef.current = new Phaser.Game(config);
-    console.log('[App] Phaser game created');
-
-    // Listen for scene ready event instead of trying to get scene immediately
-    const unsubscribeSceneReady = eventBus.on('SCENE_READY', () => {
-      console.log('[App] SCENE_READY event received');
-      
-      // Now we can safely get the scene
-      const scene = gameRef.current?.scene.getScene('GameScene') as GameScene | undefined;
-      console.log('[App] Scene retrieved:', scene ? 'found' : 'null');
-      
-      if (scene) {
-        sceneRef.current = scene;
-        const state = gameEngine.getState();
-        console.log('[App] Calling scene.updateState...');
-        if (state) {
-          scene.updateState(state);
-          console.log('[App] scene.updateState called successfully');
-        }
-      }
-    });
-
-    // Periodic sync as backup
-    const unsubscribe = setInterval(() => {
-      const state = gameEngine.getState();
-      if (sceneRef.current && state) {
-        sceneRef.current.updateState(state);
-      }
-    }, 100);
-
-    setStarted(true);
-    console.log('[App] started=true');
+    const unsubscribes = events.map(eventName => 
+      eventBus.on(eventName, () => {
+        console.log('[App] Event received:', eventName);
+        refreshState();
+      })
+    );
 
     return () => {
-      unsubscribeSceneReady();
-      clearInterval(unsubscribe);
-      if (gameRef.current) {
-        gameRef.current.destroy(true);
-        gameRef.current = null;
-      }
+      unsubscribes.forEach(unsub => unsub());
     };
-  }, [loading, error, started]);
+  }, [gameState, refreshState]);
 
   if (loading) {
     return (
@@ -144,9 +121,26 @@ export function App() {
     );
   }
 
+  if (!gameState) {
+    return (
+      <div className="loading-screen">
+        <div className="loading-content">
+          <p>Initializing...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="game-container">
-      <div id="game-container" className="phaser-container"></div>
+      <GameBoard 
+        state={gameState} 
+        onStateChange={refreshState}
+        onTileHover={setHoveredTile}
+        onTileLeave={() => setHoveredTile(null)}
+      />
+      <HoverInfoPanel state={gameState} hoveredTile={hoveredTile} />
+      <CombatPreviewPanel state={gameState} hoveredTile={hoveredTile} />
       <GameUI />
     </div>
   );

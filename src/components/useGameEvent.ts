@@ -81,3 +81,9 @@ export function useWinner(): number | null {
     return gameEngine.getState()?.winner || null;
   });
 }
+
+export function useFullGameState(): import('../game/types').GameState | null {
+  return useGameState(() => {
+    return gameEngine.getState() || null;
+  });
+}

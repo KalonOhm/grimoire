@@ -259,12 +259,11 @@ export function calculateDamage(
 
 /**
  * Check if a defender can retaliate after being attacked.
- * Retaliation rules:
- * 1. Defender must have survived
- * 2. Defender must not have acted this turn
- * 3. Defender must have a weapon that can target attacker
- * 4. Attacker must be in weapon range
- * 5. Prefer secondary weapon (melee) over primary
+ * Retaliation rules (reactive defense, not an "action"):
+ * 1. Defender must have survived the attack
+ * 2. Defender must have a weapon that can target attacker
+ * 3. Attacker must be in weapon range
+ * 4. Prefer secondary weapon (melee) over primary
  */
 export function canRetaliate(
   defender: Unit,
@@ -275,24 +274,19 @@ export function canRetaliate(
   const defenderDef = unitRegistry.get(defender.definitionId);
   if (!defenderDef) return false;
 
-  // Can't retaliate if already acted
-  if (defender.hasActed) return false;
-
   // Get the retaliation weapon (prefer secondary/melee)
   const primaryWeapon = defenderDef.weapons.primary;
   const secondaryWeapon = defenderDef.weapons.secondary;
 
-  // Check if secondary weapon can target
+  // Check if secondary weapon can target and is in range
   if (secondaryWeapon && canTarget(defender, attacker, secondaryWeapon, gameState)) {
-    // Check if in range for secondary
     if (isInRange(defenderPosition, attacker.position, secondaryWeapon)) {
       return true;
     }
   }
 
-  // Check if primary weapon can target
+  // Check if primary weapon can target and is in range
   if (canTarget(defender, attacker, primaryWeapon, gameState)) {
-    // Check if in range for primary
     if (isInRange(defenderPosition, attacker.position, primaryWeapon)) {
       return true;
     }

@@ -4,39 +4,39 @@
   "width": 16,
   "height": 12,
   "terrain": [
-    ["impassable", "impassable", "plains", "plains", "plains", "forest", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "impassable", "impassable"],
-    ["impassable", "plains", "plains", "plains", "plains", "forest", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "impassable"],
-    ["plains", "plains", "plains", "plains", "plains", "forest", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains"],
+    ["impassable", "impassable", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "impassable", "impassable"],
+    ["impassable", "plains", "plains", "plains", "forest", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "factory", "plains", "hq", "impassable"],
     ["plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains"],
+    ["plains", "plains", "plains", "forest", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains"],
+    ["plains", "factory", "road", "road", "road", "plains", "plains", "ruins", "ruins", "plains", "plains", "plains", "plains", "factory", "plains", "plains"],
+    ["plains", "plains", "river", "river", "river", "river", "bridge", "plains", "plains", "bridge", "river", "river", "river", "plains", "plains", "plains"],
+    ["plains", "plains", "river", "river", "river", "river", "bridge", "plains", "plains", "bridge", "river", "river", "river", "plains", "plains", "plains"],
+    ["plains", "plains", "river", "river", "river", "river", "bridge", "plains", "plains", "bridge", "river", "river", "river", "plains", "plains", "plains"],
+    ["plains", "plains", "road", "road", "road", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "forest", "plains", "plains"],
     ["plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains"],
-    ["plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains"],
-    ["plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains"],
-    ["plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains"],
-    ["plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains"],
-    ["plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains"],
-    ["impassable", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "impassable"],
-    ["impassable", "impassable", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "impassable", "impassable", "impassable"]
+    ["impassable", "hq", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "factory", "plains", "impassable"],
+    ["impassable", "impassable", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "impassable", "impassable"]
   ],
   "units": [
     { "definitionId": "intercessor_squad", "owner": 1, "position": { "x": 2, "y": 9 } },
     { "definitionId": "assault_jump_squad", "owner": 1, "position": { "x": 3, "y": 9 } },
-    { "definitionId": "predator_tank", "owner": 1, "position": { "x": 1, "y": 10 } },
+    { "definitionId": "predator_tank", "owner": 1, "position": { "x": 2, "y": 10 } },
+    { "definitionId": "predator_tank", "owner": 1, "position": { "x": 1, "y": 9 } },
     { "definitionId": "whirlwind_tank", "owner": 1, "position": { "x": 4, "y": 10 } },
     { "definitionId": "scout_squad", "owner": 1, "position": { "x": 5, "y": 9 } },
     { "definitionId": "intercessor_squad", "owner": 2, "position": { "x": 13, "y": 2 } },
     { "definitionId": "assault_jump_squad", "owner": 2, "position": { "x": 12, "y": 2 } },
     { "definitionId": "predator_tank", "owner": 2, "position": { "x": 14, "y": 1 } },
+    { "definitionId": "predator_tank", "owner": 2, "position": { "x": 13, "y": 1 } },
     { "definitionId": "whirlwind_tank", "owner": 2, "position": { "x": 11, "y": 1 } },
     { "definitionId": "scout_squad", "owner": 2, "position": { "x": 10, "y": 2 } }
   ],
   "buildings": [
     { "terrainId": "hq", "position": { "x": 1, "y": 10 } },
     { "terrainId": "hq", "position": { "x": 14, "y": 1 } },
-    { "terrainId": "factory", "position": { "x": 3, "y": 10 } },
+    { "terrainId": "factory", "position": { "x": 1, "y": 4 } },
     { "terrainId": "factory", "position": { "x": 12, "y": 1 } },
-    { "terrainId": "city", "position": { "x": 7, "y": 5 } },
-    { "terrainId": "city", "position": { "x": 8, "y": 5 } },
-    { "terrainId": "city", "position": { "x": 7, "y": 6 } },
-    { "terrainId": "city", "position": { "x": 8, "y": 6 } }
+    { "terrainId": "factory", "position": { "x": 13, "y": 4 } },
+    { "terrainId": "factory", "position": { "x": 13, "y": 10 } }
   ]
 }

@@ -1,0 +1,50 @@
+.hover-info-panel {
+  position: absolute;
+  bottom: 80px;
+  left: 20px;
+  width: 220px;
+  background: rgba(0, 0, 0, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+}
+
+.hover-info-section {
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.hover-info-section:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.hover-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.hover-info-row:last-child {
+  margin-bottom: 0;
+}
+
+.hover-info-label {
+  font-size: 11px;
+  color: #888888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.hover-info-value {
+  font-size: 12px;
+  color: #ffffff;
+  font-weight: 500;
+  text-align: right;
+  text-transform: capitalize;
+}

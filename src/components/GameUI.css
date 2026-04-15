@@ -64,99 +64,45 @@
   text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
 }
 
-.unit-panel {
-  position: absolute;
-  bottom: 80px;
-  left: 20px;
-  width: 280px;
+.action-panel {
   background: rgba(0, 0, 0, 0.85);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 8px;
-  padding: 16px;
+  padding: 8px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-}
-
-.unit-panel h3 {
-  margin: 0 0 12px 0;
-  font-size: 18px;
-  color: #ffffff;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-  padding-bottom: 8px;
-}
-
-.hp-bar-container {
-  position: relative;
-  height: 24px;
-  background: rgba(0, 0, 0, 0.5);
-  border-radius: 4px;
-  overflow: hidden;
-  margin-bottom: 12px;
-}
-
-.hp-bar {
-  height: 100%;
-  background: linear-gradient(90deg, #00cc00 0%, #00ff00 100%);
-  transition: width 0.3s ease;
-  box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
-}
-
-.hp-text {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 12px;
-  font-weight: 600;
-  color: #ffffff;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-}
-
-.unit-status {
   display: flex;
-  gap: 12px;
-  margin-bottom: 12px;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 100;
 }
 
-.unit-status span {
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.status-ready {
-  background: rgba(0, 200, 0, 0.2);
-  color: #00ff00;
-  border: 1px solid rgba(0, 255, 0, 0.3);
-}
-
-.status-used {
-  background: rgba(150, 150, 150, 0.2);
-  color: #888888;
-  border: 1px solid rgba(150, 150, 150, 0.3);
-}
-
-.unit-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.unit-actions button {
-  flex: 1;
-  padding: 8px 12px;
+.action-panel button {
+  padding: 10px 24px;
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 4px;
   background: rgba(50, 50, 50, 0.8);
   color: #ffffff;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+  min-width: 100px;
 }
 
-.unit-actions button:hover {
+.action-panel button:hover {
   background: rgba(70, 70, 70, 0.9);
   border-color: rgba(255, 255, 255, 0.5);
+}
+
+.action-panel .cancel-btn {
+  margin-top: 8px;
+  border-color: rgba(255, 100, 100, 0.4);
+  background: rgba(80, 30, 30, 0.8);
+}
+
+.action-panel .cancel-btn:hover {
+  background: rgba(100, 40, 40, 0.9);
+  border-color: rgba(255, 100, 100, 0.6);
 }
 
 .bottom-bar {

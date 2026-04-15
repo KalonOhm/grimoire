@@ -17,7 +17,7 @@
   {
     "id": "forest",
     "name": "Forest",
-    "defense": 30,
+    "defense": 20,
     "movement_cost": {
       "infantry": 1,
       "tread": 2,
@@ -133,6 +133,21 @@
     "blocks_movement": false,
     "can_capture": true,
     "income_per_turn": 250
+  },
+  {
+    "id": "ruins",
+    "name": "Ruins",
+    "defense": 30,
+    "movement_cost": {
+      "infantry": 1,
+      "tread": 1,
+      "tire": 1,
+      "fly": 1,
+      "mount": 1
+    },
+    "blocks_movement": false,
+    "can_capture": false,
+    "income_per_turn": 0
   },
   {
     "id": "water",

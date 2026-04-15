@@ -16,6 +16,8 @@ html, body, #root {
   height: 100vh;
   position: relative;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .phaser-container {
@@ -30,6 +32,10 @@ html, body, #root {
   display: block;
   width: 100% !important;
   height: 100% !important;
+}
+
+#game-container {
+  display: none;
 }
 
 .loading-screen,
