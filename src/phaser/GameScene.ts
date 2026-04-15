@@ -221,6 +221,22 @@ export class GameScene extends Phaser.Scene {
     );
 
     this.unsubscribeFunctions.push(
+      eventBus.on('BUILDING_SELECTED', () => {
+        this.state = gameEngine.getState();
+        this.renderBuildings(this.state);
+        this.renderOverlays();
+      })
+    );
+
+    this.unsubscribeFunctions.push(
+      eventBus.on('BUILDING_DESELECTED', () => {
+        this.state = gameEngine.getState();
+        this.renderBuildings(this.state);
+        this.renderOverlays();
+      })
+    );
+
+    this.unsubscribeFunctions.push(
       eventBus.on('MOVE_PREVIEW_SHOWN', () => {
         this.state = gameEngine.getState();
         this.renderOverlays();
