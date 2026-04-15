@@ -36,13 +36,12 @@ export function HoverInfoPanel({ state, hoveredTile }: HoverInfoPanelProps) {
   const terrainName = TERRAIN_NAMES[tile.terrainId] || tile.terrainId;
   const defense = terrain?.defense || 0;
 
-  let buildingOwner: number | null = null;
-  if (tile.terrainId === 'hq' || tile.terrainId === 'factory' || tile.terrainId === 'city') {
-    for (const building of state.buildings.values()) {
-      if (building.position.x === hoveredTile.x && building.position.y === hoveredTile.y) {
-        buildingOwner = building.owner;
-        break;
-      }
+  // Check for building in state.buildings (Wargroove-style)
+  let building: { buildingType: string; owner: number | null; hp: number; maxHp: number } | null = null;
+  for (const b of state.buildings.values()) {
+    if (b.position.x === hoveredTile.x && b.position.y === hoveredTile.y) {
+      building = { buildingType: b.buildingType, owner: b.owner, hp: b.hp, maxHp: b.maxHp };
+      break;
     }
   }
 
@@ -55,25 +54,7 @@ export function HoverInfoPanel({ state, hoveredTile }: HoverInfoPanelProps) {
 
   return (
     <div className="hover-info-panel">
-      <div className="hover-info-section">
-        <div className="hover-info-row">
-          <span className="hover-info-label">Terrain:</span>
-          <span className="hover-info-value">{terrainName}</span>
-        </div>
-        <div className="hover-info-row">
-          <span className="hover-info-label">Defense:</span>
-          <span className="hover-info-value">{defense}%</span>
-        </div>
-        {tile.terrainId === 'hq' || tile.terrainId === 'factory' || tile.terrainId === 'city' ? (
-          <div className="hover-info-row">
-            <span className="hover-info-label">Owner:</span>
-            <span className="hover-info-value">
-              {buildingOwner === null ? 'Neutral' : `Player ${buildingOwner}`}
-            </span>
-          </div>
-        ) : null}
-      </div>
-
+      {/* Unit info on top */}
       {unit && unitDef && (
         <div className="hover-info-section">
           <div className="hover-info-row">
@@ -96,6 +77,36 @@ export function HoverInfoPanel({ state, hoveredTile }: HoverInfoPanelProps) {
           </div>
         </div>
       )}
+
+      {/* Terrain/Building info below */}
+      <div className="hover-info-section">
+        <div className="hover-info-row">
+          <span className="hover-info-label">Terrain:</span>
+          <span className="hover-info-value">{terrainName}</span>
+        </div>
+        <div className="hover-info-row">
+          <span className="hover-info-label">Defense:</span>
+          <span className="hover-info-value">{defense}%</span>
+        </div>
+        {building && (
+          <>
+            <div className="hover-info-row">
+              <span className="hover-info-label">Building:</span>
+              <span className="hover-info-value">{building.buildingType.toUpperCase()}</span>
+            </div>
+            <div className="hover-info-row">
+              <span className="hover-info-label">HP:</span>
+              <span className="hover-info-value">{building.hp}/{building.maxHp}</span>
+            </div>
+            <div className="hover-info-row">
+              <span className="hover-info-label">Owner:</span>
+              <span className="hover-info-value">
+                {building.owner === null ? 'Neutral' : `Player ${building.owner}`}
+              </span>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }
