@@ -7,7 +7,7 @@ import { unitRegistry, terrainRegistry } from '../game/registry';
 const TILE_SIZE = 64;
 
 const COLORS = {
-  PLains: 0x4a7c3f,
+  PLAINS: 0x4a7c3f,
   FOREST: 0x2d5a27,
   ROAD: 0x8b7355,
   WATER: 0x1a4d7c,
@@ -305,18 +305,15 @@ export class GameScene extends Phaser.Scene {
         const tile = map[y][x];
         const terrain = terrainRegistry.get(tile.terrainId);
 
-        let color = COLORS.PLains;
+        let color = COLORS.PLAINS;
         if (terrain) {
           switch (terrain.id) {
-            case 'plains': color = COLORS.PLains; break;
+            case 'plains': color = COLORS.PLAINS; break;
             case 'forest': color = COLORS.FOREST; break;
             case 'road': color = COLORS.ROAD; break;
             case 'water': color = COLORS.WATER; break;
             case 'impassable': color = COLORS.IMPASSABLE; break;
-            case 'hq': color = COLORS.HQ; break;
-            case 'factory': color = COLORS.FACTORY; break;
-            case 'city': color = COLORS.CITY; break;
-            default: color = COLORS.PLains;
+            default: color = COLORS.PLAINS;
           }
         }
 
