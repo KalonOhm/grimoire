@@ -83,24 +83,6 @@
     "transport_tags_allowed": ["transport_infantry_heavy", "drop_pod"],
     "weapons": {
       "primary": {
-        "name": "Heavy Bolt Pistol",
-        "uses_ammo": true,
-        "min_range": 1,
-        "max_range": 1,
-        "fire_after_move": true,
-        "range_penalty_multiplier": 1.0,
-        "damage_vs_armor": {
-          "light_infantry": 45,
-          "heavy_infantry": 35,
-          "super_heavy_infantry": 20,
-          "light_vehicle": 20,
-          "medium_vehicle": 10,
-          "heavy_vehicle": 2,
-          "fortification": 1,
-          "aircraft": -1
-        }
-      },
-      "secondary": {
         "name": "Astartes Chainsword",
         "uses_ammo": false,
         "min_range": 1,
@@ -115,6 +97,24 @@
           "medium_vehicle": 15,
           "heavy_vehicle": 5,
           "fortification": 5,
+          "aircraft": -1
+        }
+      },
+      "secondary": {
+        "name": "Heavy Bolt Pistol",
+        "uses_ammo": true,
+        "min_range": 1,
+        "max_range": 1,
+        "fire_after_move": true,
+        "range_penalty_multiplier": 1.0,
+        "damage_vs_armor": {
+          "light_infantry": 45,
+          "heavy_infantry": 35,
+          "super_heavy_infantry": 20,
+          "light_vehicle": 20,
+          "medium_vehicle": 10,
+          "heavy_vehicle": 2,
+          "fortification": 1,
           "aircraft": -1
         }
       }

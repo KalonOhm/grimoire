@@ -312,8 +312,6 @@ function getTerrainDefense(position: Position, gameState: GameState): number {
  * @param gameState - Current game state (for terrain lookup)
  * @returns Final damage to apply
  */
-const ATTACKER_BONUS = 1.2; // 20% bonus for attacker (first strike advantage)
-
 export function calculateDamage(
   attacker: Unit,
   defender: Unit,
@@ -344,12 +342,7 @@ export function calculateDamage(
   const defenseReduction = terrainDefense / 100;
   damage = damage * (1 - defenseReduction);
 
-  // Step 5: Attacker bonus (first strike advantage) - not applied to retaliation
-  if (!isRetaliation) {
-    damage = damage * ATTACKER_BONUS;
-  }
-
-  // Step 6: Floor to integer and enforce minimum
+  // Step 5: Floor to integer and enforce minimum
   const finalDamage = Math.floor(damage);
 
   // Minimum damage rule: at least 1 if any damage was calculated
