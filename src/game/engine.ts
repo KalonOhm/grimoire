@@ -495,16 +495,8 @@ class GameEngine {
 
     const oldPosition = { ...unit.position };
 
-    // Check if old position had a building - restore building content if so
-    const oldBuilding = this.state.buildings.get(`building_${oldPosition.x}_${oldPosition.y}`);
-    if (oldBuilding) {
-      this.state.map[oldPosition.y][oldPosition.x].content = {
-        type: 'building',
-        buildingId: oldBuilding.id,
-      };
-    } else {
-      this.state.map[oldPosition.y][oldPosition.x].content = { type: 'empty' };
-    }
+    // Clear old position (units can't be on buildings, so no restoration needed)
+    this.state.map[oldPosition.y][oldPosition.x].content = { type: 'empty' };
 
     // Update unit position
     unit.position = destination;
@@ -524,14 +516,10 @@ class GameEngine {
     // Clear move preview
     this.state.movePreview = null;
 
-    // If unit cannot fire after moving, go to post-move action phase
-    if (!definition.weapons.primary.fire_after_move) {
-      this.setPhase('UNIT_MOVED');
-      return;
-    }
-
-    // Show attack preview from new position (if weapon allows fire-after-move)
-    this.showAttackPreviewAfterMove(destination);
+    // Always go to UNIT_MOVED after moving - show action menu
+    // Player chooses: Attack, Wait, or Cancel
+    // Don't auto-show attack targets - that's done via menu option instead
+    this.setPhase('UNIT_MOVED');
   }
 
   // ========================================================================
