@@ -238,9 +238,6 @@ export function getAllValidTargetsInRange(
   return Array.from(targetMap.values());
 }
 
-  return targets;
-}
-
 // ============================================================================
 // DAMAGE MODIFIERS
 // ============================================================================
