@@ -25,7 +25,17 @@ const TERRAIN_COLORS: Record<string, string> = {
 };
 
 // Building terrain types that render as buildings
-const BUILDING_TERRAINS = ['hq', 'factory', 'city'];
+// Building types now come from state.buildings Map, not terrain
+const getBuildingAtPosition = (buildings: Map<string, any>, x: number, y: number) => {
+  for (const building of buildings.values()) {
+    if (building.position.x === x && building.position.y === y) {
+      return building;
+    }
+  }
+  return null;
+};
+
+
 
 const PLAYER_COLORS = {
   1: { bg: '#4488ff', border: '#2266cc', text: '#ffffff', spent: '#88aacc', terrain: '#2a4a99' },
@@ -231,16 +241,11 @@ export function GameBoard({ state, onStateChange, onTileHover, onTileLeave }: Ga
           row.map((tile, x) => {
             let terrainColor = TERRAIN_COLORS[tile.terrainId] || '#333333';
             
-            if (BUILDING_TERRAINS.includes(tile.terrainId)) {
-              for (const building of state.buildings.values()) {
-                if (building.position.x === x && building.position.y === y) {
-                  if (building.owner !== null) {
-                    const ownerColors = PLAYER_COLORS[building.owner as 1 | 2];
-                    terrainColor = ownerColors.terrain;
-                  }
-                  break;
-                }
-              }
+            // Check if there's a building at this position
+            const buildingAtPos = getBuildingAtPosition(state.buildings, x, y);
+            if (buildingAtPos && buildingAtPos.owner !== null) {
+              const ownerColors = PLAYER_COLORS[buildingAtPos.owner as 1 | 2];
+              terrainColor = ownerColors.terrain;
             }
             
             const isReachable = isReachableTile(x, y);
@@ -269,10 +274,10 @@ export function GameBoard({ state, onStateChange, onTileHover, onTileLeave }: Ga
                 onMouseEnter={() => handleTileEnter(x, y)}
                 onMouseLeave={handleTileLeave}
               >
-                {BUILDING_TERRAINS.includes(tile.terrainId) && (
+                {getBuildingAtPosition(state.buildings, x, y) && (
                   <BuildingTriangle 
                     position={{ x, y }} 
-                    terrainId={tile.terrainId}
+                    terrainId={getBuildingAtPosition(state.buildings, x, y)?.buildingType || 'factory'}
                     buildings={state.buildings}
                   />
                 )}
