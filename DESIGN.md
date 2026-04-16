@@ -59,22 +59,55 @@ data/
 | `TURN_START` | Refresh units, apply start-of-turn effects, collect income |
 | `IDLE` | No unit selected; player may inspect or select |
 | `UNIT_SELECTED` | Ready unit selected; show legal actions |
+| `UNIT_MOVED` | Unit has moved; showing post-move actions |
 | `ACTION_PREVIEW_MOVE` | Show reachable tiles and path preview |
 | `ACTION_PREVIEW_ATTACK_FROM_CURRENT` | Show valid targets from current position |
 | `ACTION_PREVIEW_ATTACK_AFTER_MOVE` | Show valid targets from destination tile |
+| `ACTION_PREVIEW_CAPTURE` | Show capture target |
+| `ACTION_PREVIEW_LOAD` | Show valid transports to load into |
+| `ACTION_PREVIEW_UNLOAD` | Show valid tiles to unload unit |
+| `ACTION_PREVIEW_MERGE` | Show valid merge targets |
+| `ACTION_CONFIRM` | Awaiting player confirmation |
 | `UNIT_ACTION_RESOLVE` | Animate and apply action |
 | `UNIT_SPENT` | Unit marked spent; return to IDLE |
 | `TURN_END` | Process cleanup, swap active player, go to TURN_START |
 | `GAME_OVER` | Winner determined; input limited |
-
-### Building Interaction Branch
-
-| State | Description |
-|-------|-------------|
 | `BUILDING_SELECTED` | Owned building selected |
 | `ACTION_PREVIEW_BUILD` | Show unit production menu |
 | `ACTION_CONFIRM_BUILD` | Confirm spending credits |
 | `BUILDING_ACTION_RESOLVE` | Create unit, deduct credits |
+
+## Deferred Features
+
+### Core Gameplay
+- Building capture progress (infantry adjacent to neutral building)
+- Building attack (enemy building retaliates)
+- Building repair (restore friendly building HP)
+- Building income system (resource buildings grant income per turn)
+- Unit production from factories
+
+### Units & Logistics
+- Fuel and ammo system
+- Supply/resupply mechanics
+- Transport units (load/unload)
+- Unit merging
+- Movement preview highlighting (grey out occupied tiles)
+
+### AI & Opponents
+- AI opponents
+- Fog of War
+
+### Faction System
+- CO/Warlord powers (Strategem system)
+- Faction-specific bonuses
+
+### Controls & UI
+- Keyboard/controller controls
+- Sound effects and animations
+
+### Advanced Terrain
+- Passable-for-air terrain (fly over, can't land)
+- Flyover for all buildings
 
 ## Combat System
 
@@ -162,17 +195,26 @@ interface UnitDefinition {
 6. Army elimination win condition
 7. HQ capture win condition
 
-## Deferred Features
+## Current Implementation Status
 
-- Fog of War
-- CO/Warlord powers
-- Fuel and ammo logistics
-- Transport units and loading/unloading
-- Unit merging
-- Building capture progress
-- Unit production
-- Sound effects and animations
-- AI opponents
+### Rendering Stack
+
+**Active (Current):** React-based rendering via `GameBoard.tsx`
+- All game rendering (terrain, units, buildings) uses React components
+- Tile overlays (selection, movement previews) rendered via CSS
+- Game logic remains framework-agnostic in `src/game/`
+
+**Inactive (Deferred):** Phaser-based rendering via `GameScene.ts`
+- Phaser 4.0 framework code exists in `src/phaser/` but is not currently wired up
+- The `createGameConfig` in `src/phaser/config.ts` is never called
+- GameScene event listeners are registered but never triggered
+
+### Priority Guidance
+
+When adding new features or adjusting UI:
+1. Prefer React/GameBoard implementation - this is the working path
+2. Do not prioritize GameScene integration - it is a distant future goal
+3. Keep game logic in `src/game/` to maintain framework-agnostic design
 
 ## Development Commands
 

@@ -1,3 +1,12 @@
+// ============================================================================
+// GameScene.ts - Phaser 4.0 Renderer
+// ============================================================================
+// CURRENTLY DISABLED: This file is not instantiated.
+// The game currently renders via React's GameBoard.tsx.
+//
+// TODO: Wire up Phaser integration when ready to migrate.
+// Keep framework-agnostic game logic in src/game/
+// ============================================================================
 import * as Phaser from 'phaser';
 import { GameState, Position, Tile } from '../game/types';
 import { gameEngine } from '../game/engine';
@@ -16,6 +25,7 @@ const COLORS = {
   FACTORY: 0x555555,
   CITY: 0x6b6b6b,
   MOVE_PREVIEW: 0x4488ff,
+  MOVE_BLOCKED: 0x444444,
   ATTACK_PREVIEW: 0xff4444,
   SELECTED: 0xffff00,
   UNIT_ALLY: 0x4488ff,
@@ -412,6 +422,19 @@ export class GameScene extends Phaser.Scene {
       for (const tile of this.state.movePreview.reachableTiles) {
         this.overlayGraphics.fillStyle(COLORS.MOVE_PREVIEW, 0.4);
         this.overlayGraphics.fillRect(tile.x * TILE_SIZE, tile.y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+      }
+      for (const tile of this.state.movePreview.blockedTiles) {
+        const x = tile.x * TILE_SIZE;
+        const y = tile.y * TILE_SIZE;
+        this.overlayGraphics.fillStyle(COLORS.MOVE_BLOCKED, 0.3);
+        this.overlayGraphics.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+        this.overlayGraphics.lineStyle(2, 0x222222, 0.8);
+        this.overlayGraphics.beginPath();
+        this.overlayGraphics.moveTo(x, y);
+        this.overlayGraphics.lineTo(x + TILE_SIZE, y + TILE_SIZE);
+        this.overlayGraphics.moveTo(x + TILE_SIZE, y);
+        this.overlayGraphics.lineTo(x, y + TILE_SIZE);
+        this.overlayGraphics.strokePath();
       }
     }
 

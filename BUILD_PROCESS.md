@@ -602,8 +602,20 @@ npm run dev        # Development server
 ### Adding New Features
 1. Add new state to `GamePhase` if needed
 2. Implement transition logic in `engine.ts`
-3. Add UI handling in `GameScene.ts` and `GameUI.tsx`
+3. Add UI handling in `GameBoard.tsx` (not GameScene - currently disabled)
 4. Add events if UI needs to react
+
+---
+
+## Current Implementation Note
+
+**IMPORTANT:** The Phaser-based GameScene is currently disabled. All rendering uses React's GameBoard.tsx component.
+
+- `src/phaser/GameScene.ts` and `src/phaser/config.ts` exist but are never instantiated
+- All game visuals (terrain, units, buildings, UI overlays) are rendered via React components
+- Game logic remains in `src/game/` (framework-agnostic)
+
+When adding new features, add UI handling to `GameBoard.tsx` and `GameUI.tsx`, not GameScene.ts.
 
 ---
 

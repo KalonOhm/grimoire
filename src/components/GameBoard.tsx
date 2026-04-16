@@ -214,6 +214,24 @@ export function GameBoard({ state, onStateChange, onTileHover, onTileLeave }: Ga
     return state.movePreview?.reachableTiles.some(t => t.x === x && t.y === y);
   };
 
+  const isBlockedTile = (x: number, y: number) => {
+    if (!state.movePreview?.blockedTiles) return false;
+    return state.movePreview.blockedTiles.some(t => t.x === x && t.y === y);
+  };
+
+  const isBlockedByEnemy = (x: number, y: number): boolean => {
+    if (!state.movePreview?.blockedTiles) return false;
+    const blockedTile = state.movePreview.blockedTiles.find(t => t.x === x && t.y === y);
+    if (!blockedTile) return false;
+    const tileContent = state.map[blockedTile.y]?.[blockedTile.x]?.content;
+    if (!tileContent || tileContent.type !== 'unit') return false;
+    const blockingUnit = state.units.get(tileContent.unitId);
+    if (!blockingUnit) return false;
+    const selectedUnit = state.units.get(state.selectedUnitId || '');
+    const isEnemy = blockingUnit.owner !== selectedUnit?.owner;
+    return isEnemy;
+  };
+
   const isAttackTarget = (x: number, y: number) => {
     return state.attackPreview?.targets.some(t => t.position.x === x && t.position.y === y);
   };
@@ -252,12 +270,15 @@ export function GameBoard({ state, onStateChange, onTileHover, onTileLeave }: Ga
             const isTarget = isAttackTarget(x, y);
             const isUnitSelected = isSelectedUnit(x, y);
             const isBuildingSelected = isSelectedBuilding(x, y);
+            const isBlocked = isBlockedTile(x, y);
+            const isBlockedEnemy = isBlockedByEnemy(x, y);
 
             let tileClass = 'tile';
             if (isReachable) tileClass += ' tile-reachable';
             if (isTarget) tileClass += ' tile-attack-target';
             if (isUnitSelected) tileClass += ' tile-unit-selected';
             if (isBuildingSelected) tileClass += ' tile-building-selected';
+            if (isBlocked) tileClass += isBlockedEnemy ? ' tile-blocked-enemy' : ' tile-blocked';
 
             return (
               <div

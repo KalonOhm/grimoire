@@ -168,9 +168,9 @@ export function getReachableTiles(
     const current = queue.shift()!;
 
     if (current.cost > 0) {
-      // Don't add to reachable if tile has another unit (can't land on occupied tile)
+      // Don't add to reachable if tile has another unit OR a building (can't land on occupied tiles)
       const currentTile = gameState.map[current.pos.y][current.pos.x];
-      if (currentTile.content.type !== 'unit' || currentTile.content.unitId === unit.instanceId) {
+      if (currentTile.content.type === 'empty') {
         reachable.push(current.pos);
       }
     }
@@ -194,9 +194,14 @@ export function getReachableTiles(
 
       const tile = gameState.map[neighbor.y][neighbor.x];
 
-      // All units (including fly) cannot end on a tile with another unit
-      // Fly units can pass through (over) any unit when calculating path, but not land on them
+      // Fly units can pass through units but cannot land on them
+      // Non-fly units cannot pass through enemy units at all
       if (!isFly && tile.content.type === 'unit' && tile.content.unitId !== unit.instanceId) {
+        continue;
+      }
+
+      // Don't pass through buildings
+      if (tile.content.type === 'building') {
         continue;
       }
 
@@ -217,6 +222,73 @@ export function getReachableTiles(
   }
 
   return reachable;
+}
+
+export function getAdjacentBlockedTiles(
+  unit: Unit,
+  gameState: GameState,
+  reachableTiles: Position[]
+): Position[] {
+  const definition = unitRegistry.get(unit.definitionId);
+  if (!definition) return [];
+  
+  const moveType = definition.movement.type;
+  const maxCost = definition.movement.points;
+  
+  const reachableSet = new Set(reachableTiles.map(positionKey));
+  const reachableCosts = new Map<string, number>();
+  
+  for (const tile of reachableTiles) {
+    const cost = getMovementCostTo(unit, tile, gameState);
+    if (cost !== null) {
+      reachableCosts.set(positionKey(tile), cost);
+    }
+  }
+  
+  const blocked: Position[] = [];
+  const blockedSet = new Set<string>();
+
+  const startPositions = [unit.position, ...reachableTiles];
+
+  for (const tile of startPositions) {
+    const neighbors = [
+      { x: tile.x + 1, y: tile.y },
+      { x: tile.x - 1, y: tile.y },
+      { x: tile.x, y: tile.y + 1 },
+      { x: tile.x, y: tile.y - 1 },
+    ];
+
+    for (const neighbor of neighbors) {
+      const key = positionKey(neighbor);
+      if (blockedSet.has(key) || reachableSet.has(key)) continue;
+      if (neighbor.x < 0 || neighbor.y < 0 || 
+          neighbor.x >= gameState.map[0].length || 
+          neighbor.y >= gameState.map.length) continue;
+
+      const content = gameState.map[neighbor.y][neighbor.x].content;
+      
+      if (content.type === 'unit' || content.type === 'building') {
+        const neighborTerrain = gameState.map[neighbor.y][neighbor.x].terrainId;
+        const neighborCost = getMovementCost(neighborTerrain, moveType);
+        if (neighborCost === null) continue;
+        
+        let totalCost: number;
+        if (tile === unit.position) {
+          totalCost = neighborCost;
+        } else {
+          const tileCost = reachableCosts.get(positionKey(tile)) ?? maxCost + 1;
+          totalCost = tileCost + neighborCost;
+        }
+        
+        if (totalCost <= maxCost) {
+          blocked.push(neighbor);
+          blockedSet.add(key);
+        }
+      }
+    }
+  }
+
+  return blocked;
 }
 
 export function getMovementCostTo(

@@ -1,3 +1,9 @@
+// ============================================================================
+// config.ts - Phaser Configuration
+// ============================================================================
+// CURRENTLY DISABLED: This file is not instantiated.
+// The game currently renders via React's GameBoard.tsx.
+// ============================================================================
 import * as Phaser from 'phaser';
 import { GameScene } from './GameScene';
 

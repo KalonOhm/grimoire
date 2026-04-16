@@ -293,7 +293,8 @@ export interface GameState {
   // Preview state (for highlighting)
   movePreview: {
     reachableTiles: Position[];  // Tiles unit can reach
-    path: Position[];            // Path to selected destination
+    blockedTiles: Position[];  // Tiles blocked but adjacent to reachable
+    path: Position[];           // Path to selected destination
     destination: Position | null; // Selected destination
   } | null;
   

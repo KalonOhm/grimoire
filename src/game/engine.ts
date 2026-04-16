@@ -19,7 +19,7 @@ import {
 } from './types';
 import { eventBus } from './events';
 import { unitRegistry, terrainRegistry, initializeArmorClasses } from './registry';
-import { getReachableTiles, findPath } from './movement';
+import { getReachableTiles, getAdjacentBlockedTiles, findPath } from './movement';
 import { calculateDamage, canRetaliate, getValidTargets, getBestRetaliationWeapon, getBestWeaponForTarget, getAllValidTargetsInRange } from './combat';
 
 // ============================================================================
@@ -412,14 +412,16 @@ class GameEngine {
 
     // Get all tiles this unit can reach
     const reachableTiles = getReachableTiles(unit, this.state);
+    const blockedTiles = getAdjacentBlockedTiles(unit, this.state, reachableTiles);
     
     this.state.movePreview = {
       reachableTiles,
+      blockedTiles,
       path: [],
       destination: null,
     };
 
-    eventBus.emit('MOVE_PREVIEW_SHOWN', { unitId, reachableTiles });
+    eventBus.emit('MOVE_PREVIEW_SHOWN', { unitId, reachableTiles, blockedTiles });
 
     this.setPhase('ACTION_PREVIEW_MOVE');
   }

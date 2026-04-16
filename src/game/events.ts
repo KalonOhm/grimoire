@@ -9,7 +9,7 @@ interface EventMap {
   UNIT_DESELECTED: { unitId: string };
   BUILDING_SELECTED: { buildingId: string; building: Building };
   BUILDING_DESELECTED: { buildingId: string };
-  MOVE_PREVIEW_SHOWN: { unitId: string; reachableTiles: Position[] };
+  MOVE_PREVIEW_SHOWN: { unitId: string; reachableTiles: Position[]; blockedTiles: Position[] };
   MOVE_PREVIEW_HIDDEN: { unitId: string };
   MOVE_DESTINATION_SELECTED: { unitId: string; destination: Position; path: Position[] };
   ATTACK_PREVIEW_SHOWN: { unitId: string; targets: Array<{ unitId: string; position: Position }> };
