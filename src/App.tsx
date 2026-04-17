@@ -1,7 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { GameState, Position } from './game/types';
 import { GameBoard } from './components/GameBoard';
-import { GameUI } from './components/GameUI';
 import { HoverInfoPanel } from './components/HoverInfoPanel';
 import { CombatPreviewPanel } from './components/CombatPreviewPanel';
 import { gameEngine } from './game/engine';
@@ -133,15 +132,35 @@ export function App() {
 
   return (
     <div className="game-container">
-      <GameBoard 
-        state={gameState} 
-        onStateChange={refreshState}
-        onTileHover={setHoveredTile}
-        onTileLeave={() => setHoveredTile(null)}
-      />
+      <div className="top-bar">
+        <div className="turn-info">
+          <span className="turn-label">Turn {gameEngine.getState()?.currentTurn || 1}</span>
+          <span className={`player-indicator player-${gameEngine.getState()?.activePlayer || 1}`}>
+            Player {gameEngine.getState()?.activePlayer || 1}'s Turn
+          </span>
+        </div>
+        <div className="credits">
+          Credits: {(gameEngine.getState()?.players[gameEngine.getState()?.activePlayer || 1]?.credits || 0).toLocaleString()}
+        </div>
+      </div>
+      <div className="game-board-wrapper">
+          <GameBoard 
+            state={gameState} 
+            onStateChange={refreshState}
+            onTileHover={setHoveredTile}
+            onTileLeave={() => setHoveredTile(null)}
+          />
+      </div>
+      <div className="bottom-bar">
+        <div className="phase-indicator">
+          Phase: {gameEngine.getState()?.phase || 'IDLE'}
+        </div>
+        <button className="end-turn-btn" onClick={() => gameEngine.endTurn()}>
+          End Turn
+        </button>
+      </div>
       <HoverInfoPanel state={gameState} hoveredTile={hoveredTile} />
       <CombatPreviewPanel state={gameState} hoveredTile={hoveredTile} />
-      <GameUI />
     </div>
   );
 }

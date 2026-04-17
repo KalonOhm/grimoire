@@ -1,6 +1,6 @@
 .game-board-container {
   position: relative;
-  overflow: auto;
+  overflow: visible;
   background: #1a1a2e;
   flex: 1;
   display: flex;

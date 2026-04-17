@@ -13,7 +13,7 @@ import { gameEngine } from '../game/engine';
 import { eventBus } from '../game/events';
 import { unitRegistry, terrainRegistry } from '../game/registry';
 
-const TILE_SIZE = 64;
+const TILE_SIZE = 48;
 
 const COLORS = {
   PLAINS: 0x4a7c3f,

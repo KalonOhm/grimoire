@@ -15,9 +15,105 @@ html, body, #root {
   width: 100vw;
   height: 100vh;
   position: relative;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+}
+
+.top-bar {
+  flex-shrink: 0;
+  z-index: 50;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.5) 100%);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.game-board-wrapper {
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
+}
+
+.bottom-bar {
+  flex-shrink: 0;
+  z-index: 50;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.5) 100%);
+  border-top: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.turn-info {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.turn-label {
+  font-size: 18px;
+  font-weight: 600;
+  color: #cccccc;
+}
+
+.player-indicator {
+  padding: 6px 16px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.player-indicator.player-1 {
+  background: linear-gradient(135deg, #1a4d8c 0%, #0d2847 100%);
+  border: 1px solid #4488ff;
+  color: #88bbff;
+  box-shadow: 0 0 10px rgba(68, 136, 255, 0.3);
+}
+
+.player-indicator.player-2 {
+  background: linear-gradient(135deg, #8c1a1a 0%, #470d0d 100%);
+  border: 1px solid #ff4444;
+  color: #ff8888;
+  box-shadow: 0 0 10px rgba(255, 68, 68, 0.3);
+}
+
+.credits {
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffd700;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.phase-indicator {
+  font-size: 14px;
+  color: #888888;
+  text-transform: capitalize;
+}
+
+.end-turn-btn {
+  padding: 10px 24px;
+  border: 2px solid #4488ff;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #1a4d8c 0%, #0d2847 100%);
+  color: #88bbff;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.end-turn-btn:hover {
+  background: #4488ff;
+  color: #ffffff;
+  box-shadow: 0 0 15px rgba(68, 136, 255, 0.5);
 }
 
 .phaser-container {

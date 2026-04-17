@@ -5,7 +5,7 @@ import { gameEngine } from '../game/engine';
 import { getValidTargets } from '../game/combat';
 import './GameBoard.css';
 
-const TILE_SIZE = 64;
+const TILE_SIZE = 48;
 const PANEL_WIDTH = 120;
 const PANEL_OFFSET = 40;
 
