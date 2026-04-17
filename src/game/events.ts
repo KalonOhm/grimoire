@@ -17,7 +17,8 @@ interface EventMap {
   UNIT_MOVED: { unitId: string; from: Position; to: Position };
   UNIT_ATTACKED: { combat: CombatResult };
   UNIT_DESTROYED: { unitId: string };
-  BUILDING_CAPTURED: { buildingId: string; newOwner: PlayerId };
+  BUILDING_CAPTURED: { buildingId: string; newOwner: PlayerId; oldOwner?: PlayerId | null };
+  UNIT_CAPTURING: { unitId: string; buildingId: string };
   UNIT_CREATED: { unit: Unit };
   TURN_START: { player: PlayerId; turn: number };
   TURN_END: { player: PlayerId };

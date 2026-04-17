@@ -151,6 +151,7 @@ export interface Unit {
   ammo: number;       // Remaining ammo
   
   captureProgress: number; // 0-100 progress on current capture
+  capturingBuildingId: string | null; // Building currently being captured
 }
 
 // ============================================================================

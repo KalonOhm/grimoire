@@ -1,6 +1,6 @@
 import { useCallback, useRef } from 'react';
-import { GameState, Position } from '../game/types';
-import { unitRegistry, terrainRegistry } from '../game/registry';
+import { GameState, Position, Unit } from '../game/types';
+import { unitRegistry } from '../game/registry';
 import { gameEngine } from '../game/engine';
 import { getValidTargets } from '../game/combat';
 import './GameBoard.css';
@@ -54,9 +54,10 @@ interface BuildingTriangleProps {
   position: Position;
   terrainId: string;
   buildings: Map<string, { id: string; owner: number | null; position: Position }>;
+  gameState?: { units: Map<string, { instanceId: string; capturingBuildingId: string | null }> };
 }
 
-function BuildingTriangle({ position, terrainId, buildings }: BuildingTriangleProps) {
+function BuildingTriangle({ position, terrainId, buildings, gameState }: BuildingTriangleProps) {
   let buildingOwner: number | null = null;
   for (const building of buildings.values()) {
     if (building.position.x === position.x && building.position.y === position.y) {
@@ -85,7 +86,7 @@ function BuildingTriangle({ position, terrainId, buildings }: BuildingTrianglePr
 
   return (
     <div
-      className="building"
+      className={`building ${gameState?.units && Array.from(gameState.units.values()).some(u => u.capturingBuildingId === Array.from(buildings.values()).find(b => b.position.x === position.x && b.position.y === position.y)?.id) ? 'building-being-captured' : ''}`}
       style={{
         position: 'absolute',
         left: TILE_SIZE / 2,
@@ -100,7 +101,11 @@ function BuildingTriangle({ position, terrainId, buildings }: BuildingTrianglePr
         zIndex: 1,
         marginTop: `${marginTop}px`,
       }}
-    />
+    >
+      {gameState?.units && Array.from(gameState.units.values()).some(u => u.capturingBuildingId === Array.from(buildings.values()).find(b => b.position.x === position.x && b.position.y === position.y)?.id) && (
+        <span className="building-capture-indicator">⚑</span>
+      )}
+    </div>
   );
 }
 
@@ -300,6 +305,7 @@ export function GameBoard({ state, onStateChange, onTileHover, onTileLeave }: Ga
                     position={{ x, y }} 
                     terrainId={getBuildingAtPosition(state.buildings, x, y)?.buildingType || 'factory'}
                     buildings={state.buildings}
+                    gameState={state}
                   />
                 )}
               </div>
@@ -323,12 +329,13 @@ export function GameBoard({ state, onStateChange, onTileHover, onTileLeave }: Ga
           
           const letter = definition.name.charAt(0).toUpperCase();
           const hpValue = Math.max(1, Math.round((unit.currentHp / unit.maxHp) * 10));
+          const isCapturing = (unit as any).capturingBuildingId;
 
           return (
             <div
               key={unit.instanceId}
               data-unit-id={unit.instanceId}
-              className={`unit ${isSpent ? 'unit-spent' : ''}`}
+              className={`unit ${isSpent ? 'unit-spent' : ''} ${isCapturing ? 'unit-capturing' : ''}`}
               style={{
                 left: unit.position.x * TILE_SIZE + TILE_SIZE / 2,
                 top: unit.position.y * TILE_SIZE + TILE_SIZE / 2,
@@ -338,6 +345,7 @@ export function GameBoard({ state, onStateChange, onTileHover, onTileLeave }: Ga
             >
               <span className="unit-letter" style={{ color: colors.text }}>{letter}</span>
               <span className="unit-hp" style={{ color: colors.text }}>{hpValue}</span>
+              {isCapturing && <span className="capture-indicator">⚑</span>}
             </div>
           );
         })}
@@ -352,7 +360,7 @@ function ActionPanel({
   unit, 
   boardWidth 
 }: { 
-  unit: { instanceId: string; definitionId: string; position: Position };
+  unit: Unit;
   boardWidth: number;
 }) {
   const def = unitRegistry.get(unit.definitionId);
@@ -364,6 +372,7 @@ function ActionPanel({
   const validTargets = getValidTargets(unit, def.weapons.primary, unit.position, state);
   const canAttack = validTargets.length > 0 && !unit.hasActed && (!unit.hasMoved || def.weapons.primary.fire_after_move);
   const canMove = !unit.hasMoved;
+  const canCapture = gameEngine.canCapture();
 
   const unitScreenX = unit.position.x * TILE_SIZE + TILE_SIZE / 2;
   const unitScreenY = unit.position.y * TILE_SIZE + TILE_SIZE / 2;
@@ -391,6 +400,26 @@ function ActionPanel({
     gameEngine.endUnitTurn();
   };
 
+  const handleCapture = () => {
+    const state = gameEngine.getState();
+    if (!state) return;
+    
+    const selectedUnit = state.units.get(unit.instanceId);
+    if (!selectedUnit) return;
+    
+    for (const building of state.buildings.values()) {
+      if (building.owner === selectedUnit.owner) continue;
+      
+      const isAdjacent = 
+        Math.abs(selectedUnit.position.x - building.position.x) + 
+        Math.abs(selectedUnit.position.y - building.position.y) === 1;
+      if (isAdjacent) {
+        gameEngine.executeCapture(building.id);
+        return;
+      }
+    }
+  };
+
   const handleCancel = () => {
     gameEngine.deselectUnit();
   };
@@ -410,6 +439,9 @@ function ActionPanel({
       )}
       {canAttack && (
         <button onClick={handleAttack}>Attack</button>
+      )}
+      {canCapture && (
+        <button onClick={handleCapture}>Capture</button>
       )}
       <button onClick={handleWait}>Wait</button>
       <button className="cancel-btn" onClick={handleCancel}>Cancel</button>

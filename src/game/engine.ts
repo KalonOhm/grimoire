@@ -137,6 +137,7 @@ export function createInitialState(mapData: MapData): GameState {
       fuel: definition.fuel,
       ammo: definition.ammo,
       captureProgress: 0,
+      capturingBuildingId: null,
     };
 
     units.set(instanceId, unit);
@@ -286,6 +287,49 @@ class GameEngine {
 
     const currentPlayer = this.state.activePlayer;
     eventBus.emit('TURN_END', { player: currentPlayer });
+
+    // Process capture completion: at end of each player's turn,
+    // check if the OPPONENT had units capturing buildings.
+    // If any survived opponent's turn, capture completes.
+    const opponent: PlayerId = currentPlayer === 1 ? 2 : 1;
+    
+    // Group capturing units by building to check if at least 1 survived
+    const capturesByBuilding = new Map<string, string[]>();
+    for (const unit of this.state.units.values()) {
+      if (unit.owner === opponent && unit.capturingBuildingId) {
+        const buildingId = unit.capturingBuildingId;
+        if (!capturesByBuilding.has(buildingId)) {
+          capturesByBuilding.set(buildingId, []);
+        }
+        capturesByBuilding.get(buildingId)!.push(unit.instanceId);
+      }
+    }
+    
+    // Process captures: if at least 1 capturing unit survived, building is captured
+    for (const [buildingId, capturingUnitIds] of capturesByBuilding) {
+      const units = this.state.units;
+      const survivingCapture = capturingUnitIds.some(id => units.has(id));
+      if (survivingCapture) {
+        const building = this.state.buildings.get(buildingId);
+        if (building) {
+          const oldOwner = building.owner;
+          building.owner = opponent;
+          eventBus.emit('BUILDING_CAPTURED', { 
+            buildingId: building.id, 
+            newOwner: opponent,
+            oldOwner 
+          });
+        }
+      }
+      
+      // Clear capturingBuildingId from all units that were trying to capture this building
+      for (const unitId of capturingUnitIds) {
+        const unit = this.state.units.get(unitId);
+        if (unit) {
+          unit.capturingBuildingId = null;
+        }
+      }
+    }
 
     // Switch to the other player
     const nextPlayer: PlayerId = currentPlayer === 1 ? 2 : 1;
@@ -689,6 +733,79 @@ class GameEngine {
     if (this.state && !this.state.winner) {
       this.setPhase('UNIT_SPENT');
     }
+  }
+
+  /**
+   * Execute capture action on a building.
+   * Unit must be adjacent to a non-friendly building.
+   * Capture completes at end of opponent's turn.
+   */
+  executeCapture(buildingId: string): void {
+    if (!this.state) return;
+
+    const validPhases = ['UNIT_SELECTED', 'UNIT_MOVED'];
+    if (!validPhases.includes(this.state.phase)) return;
+
+    const unitId = this.state.selectedUnitId;
+    if (!unitId) return;
+
+    const unit = this.state.units.get(unitId);
+    if (!unit) return;
+
+    const definition = unitRegistry.get(unit.definitionId);
+    if (!definition || !definition.can_capture) return;
+
+    if (unit.hasActed) return;
+
+    const building = this.state.buildings.get(buildingId);
+    if (!building) return;
+
+    if (building.owner === unit.owner) return;
+
+    const isAdjacent = 
+      Math.abs(unit.position.x - building.position.x) + 
+      Math.abs(unit.position.y - building.position.y) === 1;
+    if (!isAdjacent) return;
+
+    unit.capturingBuildingId = buildingId;
+    unit.hasActed = true;
+
+    this.state.selectedUnitId = null;
+    this.state.movePreview = null;
+    this.state.attackPreview = null;
+
+    eventBus.emit('UNIT_CAPTURING', { unitId, buildingId });
+
+    this.setPhase('UNIT_SPENT');
+  }
+
+  /**
+   * Check if unit can capture any adjacent building.
+   */
+  canCapture(): boolean {
+    if (!this.state) return false;
+
+    const unitId = this.state.selectedUnitId;
+    if (!unitId) return false;
+
+    const unit = this.state.units.get(unitId);
+    if (!unit) return false;
+
+    const definition = unitRegistry.get(unit.definitionId);
+    if (!definition || !definition.can_capture) return false;
+
+    if (unit.hasActed) return false;
+
+    for (const building of this.state.buildings.values()) {
+      if (building.owner === unit.owner) continue;
+
+      const isAdjacent = 
+        Math.abs(unit.position.x - building.position.x) + 
+        Math.abs(unit.position.y - building.position.y) === 1;
+      if (isAdjacent) return true;
+    }
+
+    return false;
   }
 
   /**

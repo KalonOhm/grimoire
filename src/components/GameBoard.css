@@ -93,6 +93,33 @@
   /* Uses solid grey colors set in component */
 }
 
+.unit-capturing {
+  box-shadow: 0 0 8px 2px rgba(255, 215, 0, 0.6);
+}
+
+.building-being-captured {
+  filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.7));
+}
+
+.building-capture-indicator {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 14px;
+  color: #ffd700;
+  text-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
+}
+
+.capture-indicator {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  font-size: 16px;
+  color: #ffd700;
+  text-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
+}
+
 .unit-letter {
   font-size: 20px;
   font-weight: bold;
