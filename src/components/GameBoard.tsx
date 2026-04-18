@@ -369,8 +369,7 @@ function ActionPanel({
   const state = gameEngine.getState();
   if (!state) return null;
 
-<<<<<<< HEAD
-  // Check move capability - has not moved, has supply
+// Check move capability - has not moved, has supply
   const canMove = !unit.hasMoved && unit.supply > 0;
 
   // Check attack capability - prefer special if has ammo
