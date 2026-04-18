@@ -16,30 +16,12 @@
       "type": "infantry"
     },
     "vision": 2,
-    "fuel": 99,
+    "supply": 99,
     "ammo": 9,
     "can_capture": true,
     "transport_tags_allowed": ["transport_infantry_light", "transport_infantry_heavy", "drop_pod"],
     "weapons": {
-      "primary": {
-        "name": "Bolter",
-        "uses_ammo": true,
-        "min_range": 1,
-        "max_range": 2,
-        "fire_after_move": true,
-        "range_penalty_multiplier": 0.6,
-        "damage_vs_armor": {
-          "light_infantry": 55,
-          "heavy_infantry": 40,
-          "super_heavy_infantry": 25,
-          "light_vehicle": 30,
-          "medium_vehicle": 15,
-          "heavy_vehicle": 5,
-          "fortification": 1,
-          "aircraft": -1
-        }
-      },
-      "secondary": {
+      "auxiliary": {
         "name": "Combat Knife",
         "uses_ammo": false,
         "min_range": 1,
@@ -53,6 +35,24 @@
           "light_vehicle": 5,
           "medium_vehicle": 2,
           "heavy_vehicle": 1,
+          "fortification": 1,
+          "aircraft": -1
+        }
+      },
+      "special": {
+        "name": "Bolter",
+        "uses_ammo": true,
+        "min_range": 1,
+        "max_range": 2,
+        "fire_after_move": true,
+        "range_penalty_multiplier": 0.6,
+        "damage_vs_armor": {
+          "light_infantry": 55,
+          "heavy_infantry": 40,
+          "super_heavy_infantry": 25,
+          "light_vehicle": 30,
+          "medium_vehicle": 15,
+          "heavy_vehicle": 5,
           "fortification": 1,
           "aircraft": -1
         }
@@ -77,12 +77,12 @@
       "type": "fly"
     },
     "vision": 2,
-    "fuel": 60,
+    "supply": 60,
     "ammo": 3,
     "can_capture": true,
     "transport_tags_allowed": ["transport_infantry_heavy", "drop_pod"],
     "weapons": {
-      "primary": {
+      "auxiliary": {
         "name": "Astartes Chainsword",
         "uses_ammo": false,
         "min_range": 1,
@@ -100,7 +100,7 @@
           "aircraft": -1
         }
       },
-      "secondary": {
+      "special": {
         "name": "Heavy Bolt Pistol",
         "uses_ammo": true,
         "min_range": 1,
@@ -143,30 +143,12 @@
       "type": "tread"
     },
     "vision": 3,
-    "fuel": 99,
+    "supply": 99,
     "ammo": 9,
     "can_capture": false,
     "transport_tags_allowed": [],
     "weapons": {
-      "primary": {
-        "name": "Predator Autocannon",
-        "uses_ammo": true,
-        "min_range": 1,
-        "max_range": 2,
-        "fire_after_move": true,
-        "range_penalty_multiplier": 0.8,
-        "damage_vs_armor": {
-          "light_infantry": 60,
-          "heavy_infantry": 50,
-          "super_heavy_infantry": 40,
-          "light_vehicle": 65,
-          "medium_vehicle": 55,
-          "heavy_vehicle": 40,
-          "fortification": 25,
-          "aircraft": 15
-        }
-      },
-      "secondary": {
+      "auxiliary": {
         "name": "Storm Bolter",
         "uses_ammo": false,
         "min_range": 1,
@@ -182,6 +164,24 @@
           "heavy_vehicle": 1,
           "fortification": 1,
           "aircraft": -1
+        }
+      },
+      "special": {
+        "name": "Predator Autocannon",
+        "uses_ammo": true,
+        "min_range": 1,
+        "max_range": 2,
+        "fire_after_move": true,
+        "range_penalty_multiplier": 0.8,
+        "damage_vs_armor": {
+          "light_infantry": 60,
+          "heavy_infantry": 50,
+          "super_heavy_infantry": 40,
+          "light_vehicle": 65,
+          "medium_vehicle": 55,
+          "heavy_vehicle": 40,
+          "fortification": 25,
+          "aircraft": 15
         }
       }
     },
@@ -209,12 +209,30 @@
       "type": "tread"
     },
     "vision": 2,
-    "fuel": 99,
+    "supply": 99,
     "ammo": 6,
     "can_capture": false,
     "transport_tags_allowed": [],
     "weapons": {
-      "primary": {
+      "auxiliary": {
+        "name": "Crew Bolter",
+        "uses_ammo": false,
+        "min_range": 1,
+        "max_range": 1,
+        "fire_after_move": true,
+        "range_penalty_multiplier": 1.0,
+        "damage_vs_armor": {
+          "light_infantry": 20,
+          "heavy_infantry": 15,
+          "super_heavy_infantry": 10,
+          "light_vehicle": 5,
+          "medium_vehicle": 2,
+          "heavy_vehicle": 1,
+          "fortification": 1,
+          "aircraft": -1
+        }
+      },
+      "special": {
         "name": "Castellan Missiles",
         "uses_ammo": true,
         "min_range": 3,
@@ -252,30 +270,12 @@
       "type": "infantry"
     },
     "vision": 3,
-    "fuel": 99,
+    "supply": 99,
     "ammo": 6,
     "can_capture": true,
     "transport_tags_allowed": ["transport_infantry_light"],
     "weapons": {
-      "primary": {
-        "name": "Bolt Pistol",
-        "uses_ammo": true,
-        "min_range": 1,
-        "max_range": 1,
-        "fire_after_move": true,
-        "range_penalty_multiplier": 1.0,
-        "damage_vs_armor": {
-          "light_infantry": 35,
-          "heavy_infantry": 25,
-          "super_heavy_infantry": 10,
-          "light_vehicle": 15,
-          "medium_vehicle": 5,
-          "heavy_vehicle": 1,
-          "fortification": 1,
-          "aircraft": -1
-        }
-      },
-      "secondary": {
+      "auxiliary": {
         "name": "Combat Blade",
         "uses_ammo": false,
         "min_range": 1,
@@ -292,8 +292,92 @@
           "fortification": 1,
           "aircraft": -1
         }
+      },
+      "special": {
+        "name": "Bolt Pistol",
+        "uses_ammo": true,
+        "min_range": 1,
+        "max_range": 1,
+        "fire_after_move": true,
+        "range_penalty_multiplier": 1.0,
+        "damage_vs_armor": {
+          "light_infantry": 35,
+          "heavy_infantry": 25,
+          "super_heavy_infantry": 10,
+          "light_vehicle": 15,
+          "medium_vehicle": 5,
+          "heavy_vehicle": 1,
+          "fortification": 1,
+          "aircraft": -1
+        }
       }
     },
     "sprite": "scout_squad"
+  },
+  {
+    "id": "stormtalon_gunship",
+    "name": "Stormtalon Gunship",
+    "faction": "space_marines",
+    "category": "aircraft",
+    "cost": 5500,
+    "roster": {
+      "model_count": 1,
+      "hp_per_model": 90
+    },
+    "combat_model": "stepped",
+    "damaged_threshold": 45,
+    "damaged_effects": {
+      "damage_multiplier": 0.5,
+      "movement_modifier": -2
+    },
+    "armor": "medium_vehicle",
+    "movement": {
+      "points": 5,
+      "type": "air"
+    },
+    "vision": 3,
+    "supply": 60,
+    "ammo": 8,
+    "can_capture": false,
+    "transport_tags_allowed": [],
+    "weapons": {
+      "auxiliary": {
+        "name": "Twin-linked Bolter",
+        "uses_ammo": false,
+        "min_range": 1,
+        "max_range": 1,
+        "fire_after_move": true,
+        "range_penalty_multiplier": 1.0,
+        "damage_vs_armor": {
+          "light_infantry": 30,
+          "heavy_infantry": 20,
+          "super_heavy_infantry": 10,
+          "light_vehicle": 15,
+          "medium_vehicle": 5,
+          "heavy_vehicle": 2,
+          "fortification": 1,
+          "aircraft": 15
+        }
+      },
+      "special": {
+        "name": "Stormcaller Missiles",
+        "uses_ammo": true,
+        "min_range": 1,
+        "max_range": 3,
+        "fire_after_move": true,
+        "range_penalty_multiplier": 0.8,
+        "damage_vs_armor": {
+          "light_infantry": 55,
+          "heavy_infantry": 45,
+          "super_heavy_infantry": 30,
+          "light_vehicle": 50,
+          "medium_vehicle": 40,
+          "heavy_vehicle": 25,
+          "fortification": 35,
+          "aircraft": 45
+        }
+      }
+    },
+    "sprite": "stormtalon_gunship"
   }
 ]

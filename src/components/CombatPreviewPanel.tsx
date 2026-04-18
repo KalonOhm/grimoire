@@ -38,8 +38,10 @@ export function CombatPreviewPanel({ state, hoveredTile }: CombatPreviewPanelPro
   // Only show preview if defender is enemy and in weapon range
   if (defender.owner === attacker.owner) return null;
 
-  // Check if in weapon range
-  const validTargets = getValidTargets(attacker, attackerDef.weapons.primary, attacker.position, state);
+  // Check if in weapon range - prefer special if has ammo
+  const hasSpecial = !!attackerDef.weapons.special && attacker.ammo > 0;
+  const weapon = hasSpecial ? attackerDef.weapons.special! : attackerDef.weapons.auxiliary;
+  const validTargets = getValidTargets(attacker, weapon, attacker.position, state);
   const isInRange = validTargets.some(t => t.instanceId === defenderId);
   if (!isInRange) return null;
 

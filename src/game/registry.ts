@@ -74,10 +74,28 @@ export function validateUnitDefinition(def: UnitDefinition): string[] {
     }
   }
 
-  for (const [armor, damage] of Object.entries(def.weapons.primary.damage_vs_armor)) {
-    if (damage === -1) continue;
-    if (typeof damage !== 'number' || damage < 0) {
-      errors.push(`Unit ${def.id}: invalid damage_vs_armor value for ${armor}`);
+  // Validate auxiliary weapon (required)
+  if (!def.weapons.auxiliary) {
+    errors.push(`Unit ${def.id}: weapons.auxiliary is required`);
+  } else {
+    for (const [armor, damage] of Object.entries(def.weapons.auxiliary.damage_vs_armor)) {
+      if (damage === -1) continue;
+      if (typeof damage !== 'number' || damage < 0) {
+        errors.push(`Unit ${def.id}: invalid damage_vs_armor value for ${armor} in auxiliary weapon`);
+      }
+    }
+  }
+
+  // Validate special weapon if present (optional, uses ammo)
+  if (def.weapons.special) {
+    if (!def.weapons.special.uses_ammo) {
+      errors.push(`Unit ${def.id}: special weapon must have uses_ammo set to true`);
+    }
+    for (const [armor, damage] of Object.entries(def.weapons.special.damage_vs_armor)) {
+      if (damage === -1) continue;
+      if (typeof damage !== 'number' || damage < 0) {
+        errors.push(`Unit ${def.id}: invalid damage_vs_armor value for ${armor} in special weapon`);
+      }
     }
   }
 

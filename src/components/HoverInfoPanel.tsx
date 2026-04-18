@@ -66,8 +66,20 @@ export function HoverInfoPanel({ state, hoveredTile }: HoverInfoPanelProps) {
             <span className="hover-info-value">{unitDef.armor.replace(/_/g, ' ')}</span>
           </div>
           <div className="hover-info-row">
-            <span className="hover-info-label">Weapon:</span>
-            <span className="hover-info-value">{unitDef.weapons.primary.name}</span>
+            <span className="hover-info-label">Aux:</span>
+            <span className="hover-info-value">{unitDef.weapons.auxiliary.name}</span>
+          </div>
+          {unitDef.weapons.special && (
+            <div className="hover-info-row">
+              <span className="hover-info-label">Spec:</span>
+              <span className="hover-info-value">
+                {unitDef.weapons.special.name} ({unit.ammo})
+              </span>
+            </div>
+          )}
+          <div className="hover-info-row">
+            <span className="hover-info-label">Supply:</span>
+            <span className="hover-info-value">{unit.supply}</span>
           </div>
           <div className="hover-info-row">
             <span className="hover-info-label">HP:</span>

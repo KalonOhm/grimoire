@@ -1,5 +1,5 @@
 import { useCallback, useRef } from 'react';
-import { GameState, Position } from '../game/types';
+import { GameState, Position, Unit } from '../game/types';
 import { unitRegistry, terrainRegistry } from '../game/registry';
 import { gameEngine } from '../game/engine';
 import { getValidTargets } from '../game/combat';
@@ -348,11 +348,11 @@ export function GameBoard({ state, onStateChange, onTileHover, onTileLeave }: Ga
   );
 }
 
-function ActionPanel({ 
-  unit, 
-  boardWidth 
-}: { 
-  unit: { instanceId: string; definitionId: string; position: Position };
+function ActionPanel({
+  unit,
+  boardWidth
+}: {
+  unit: Unit;
   boardWidth: number;
 }) {
   const def = unitRegistry.get(unit.definitionId);
@@ -361,9 +361,14 @@ function ActionPanel({
   const state = gameEngine.getState();
   if (!state) return null;
 
-  const validTargets = getValidTargets(unit, def.weapons.primary, unit.position, state);
-  const canAttack = validTargets.length > 0 && !unit.hasActed && (!unit.hasMoved || def.weapons.primary.fire_after_move);
-  const canMove = !unit.hasMoved;
+  // Check move capability - has not moved, has supply, and not already moved
+  const canMove = !unit.hasMoved && unit.supply > 0;
+
+  // Check attack capability - prefer special if has ammo
+  const weapon = def.weapons.special && unit.ammo > 0 ? def.weapons.special : def.weapons.auxiliary;
+  const validTargets = getValidTargets(unit, weapon, unit.position, state);
+  const fireAfterMove = def.weapons.special && unit.ammo > 0 ? def.weapons.special.fire_after_move : def.weapons.auxiliary.fire_after_move;
+  const canAttack = validTargets.length > 0 && !unit.hasActed && (!unit.hasMoved || fireAfterMove);
 
   const unitScreenX = unit.position.x * TILE_SIZE + TILE_SIZE / 2;
   const unitScreenY = unit.position.y * TILE_SIZE + TILE_SIZE / 2;

@@ -18,9 +18,9 @@ import {
   CombatPreview,
 } from './types';
 import { eventBus } from './events';
-import { unitRegistry, terrainRegistry, initializeArmorClasses } from './registry';
-import { getReachableTiles, getAdjacentBlockedTiles, findPath } from './movement';
-import { calculateDamage, canRetaliate, getValidTargets, getBestRetaliationWeapon, getBestWeaponForTarget, getAllValidTargetsInRange } from './combat';
+import { unitRegistry, initializeArmorClasses } from './registry';
+import { getReachableTiles, getAdjacentBlockedTiles, findPath, getMovementCostTo } from './movement';
+import { calculateDamage, canRetaliate, getBestRetaliationWeapon, getBestWeaponForTarget, getAllValidTargetsInRange } from './combat';
 
 // ============================================================================
 // INSTANCE ID GENERATION
@@ -134,7 +134,7 @@ export function createInitialState(mapData: MapData): GameState {
       maxHp,
       hasMoved: false,      // Fresh units can move
       hasActed: false,      // Fresh units can act
-      fuel: definition.fuel,
+      supply: definition.supply,
       ammo: definition.ammo,
       captureProgress: 0,
     };
@@ -245,6 +245,20 @@ class GameEngine {
         unit.hasMoved = false;
         unit.hasActed = false;
         unit.captureProgress = 0;
+
+        // Daily supply consumption for air units
+        const definition = unitRegistry.get(unit.definitionId);
+        if (definition && definition.movement.type === 'air') {
+          const DAILY_AIR_SUPPLY = 2;
+          unit.supply -= DAILY_AIR_SUPPLY;
+          if (unit.supply <= 0) {
+            unit.supply = 0;
+            this.removeUnit(unit.instanceId);
+            eventBus.emit('UNIT_DESTROYED', { unitId: unit.instanceId });
+            continue;
+          }
+        }
+
         eventBus.emit('UNIT_REFRESHED', { unitId: unit.instanceId });
       }
     }
@@ -488,6 +502,14 @@ class GameEngine {
     const definition = unitRegistry.get(unit.definitionId);
     if (!definition) return;
 
+    const moveCost = getMovementCostTo(unit, destination, this.state);
+    if (moveCost === null) return;
+
+    // Check if unit has enough supply
+    if (unit.supply < moveCost) {
+      return;
+    }
+
     // Check destination - cannot move onto building tiles (Wargroove-style: interact from adjacent)
     const destContent = this.state.map[destination.y]?.[destination.x]?.content;
     if (destContent?.type === 'building') {
@@ -499,6 +521,9 @@ class GameEngine {
 
     // Clear old position (units can't be on buildings, so no restoration needed)
     this.state.map[oldPosition.y][oldPosition.x].content = { type: 'empty' };
+
+    // Consume supply for movement
+    unit.supply -= moveCost;
 
     // Update unit position
     unit.position = destination;
@@ -584,8 +609,8 @@ class GameEngine {
     const definition = unitRegistry.get(unit.definitionId);
     if (!definition) return;
 
-    // Check if weapon allows fire-after-move
-    if (!definition.weapons.primary.fire_after_move) {
+    // Check if special weapon allows fire-after-move (optional - always allowed if no special)
+    if (definition.weapons.special && !definition.weapons.special.fire_after_move) {
       // Can't fire after moving, go to UNIT_SPENT which auto-transitions to IDLE
       this.setPhase('UNIT_SPENT');
       return;
@@ -655,12 +680,15 @@ class GameEngine {
     // Transition to resolve phase
     this.setPhase('UNIT_ACTION_RESOLVE');
 
-    // Resolve the attack
+    // Resolve the attack - prefer special if available and has ammo
+    const usedSpecial = !!definition.weapons.special && attacker.ammo > 0;
+    const weapon = usedSpecial ? definition.weapons.special! : definition.weapons.auxiliary;
     const combatResult = this.resolveAttack(
       attacker,
       defender,
-      definition.weapons.primary,
-      attackPosition
+      weapon,
+      attackPosition,
+      usedSpecial
     );
 
     // Emit combat event
@@ -696,15 +724,17 @@ class GameEngine {
    * 1. Calculate damage from attacker to defender
    * 2. Apply damage to defender
    * 3. If defender survives and can retaliate, calculate retaliation
-   * 4. Return combat result
+   * 4. Consume ammo if special weapon was used
+   * 5. Return combat result
    */
   private resolveAttack(
     attacker: Unit,
     defender: Unit,
     weapon: { damage_vs_armor: Record<string, number>; range_penalty_multiplier: number; min_range: number; max_range: number; uses_ammo: boolean },
-    fromPosition: Position
+    fromPosition: Position,
+    usedSpecial: boolean
   ): CombatResult {
-    // Calculate primary damage (attacker has first-strike bonus)
+    // Calculate damage (attacker has first-strike bonus)
     const damageDealt = calculateDamage(attacker, defender, weapon as any, fromPosition, this.state!, false);
 
     // Apply damage to defender
@@ -726,6 +756,11 @@ class GameEngine {
         attackerDestroyed = attackerAfterRetaliation <= 0;
         attacker.currentHp = attackerAfterRetaliation;
       }
+    }
+
+    // Consume ammo if special weapon was used
+    if (usedSpecial && attacker.ammo > 0) {
+      attacker.ammo--;
     }
 
     return {

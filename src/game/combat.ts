@@ -117,7 +117,7 @@ export function canTarget(
 export function getBestRetaliationWeapon(
   defender: Unit,
   target: Unit,
-  gameState: GameState
+  _gameState: GameState
 ): Weapon | undefined {
   const defenderDef = unitRegistry.get(defender.definitionId);
   if (!defenderDef) return undefined;
@@ -126,18 +126,18 @@ export function getBestRetaliationWeapon(
   if (!targetDef) return undefined;
 
   const targetArmor = targetDef.armor as ArmorClass;
-  const primary = defenderDef.weapons.primary;
-  const secondary = defenderDef.weapons.secondary;
+  const auxiliary = defenderDef.weapons.auxiliary;
+  const special = defenderDef.weapons.special;
 
-  const primaryDamage = primary?.damage_vs_armor[targetArmor] ?? -1;
-  const secondaryDamage = secondary?.damage_vs_armor[targetArmor] ?? -1;
+  const auxiliaryDamage = auxiliary?.damage_vs_armor[targetArmor] ?? -1;
+  const specialDamage = special?.damage_vs_armor[targetArmor] ?? -1;
 
-  // Prefer weapon with higher damage that can actually target (damage >= 0)
-  if (secondaryDamage >= 0 && secondaryDamage > primaryDamage) {
-    return secondary;
+  // Prefer special if available and has ammo, otherwise auxiliary
+  if (special && specialDamage >= 0 && defender.ammo > 0) {
+    return special;
   }
-  if (primaryDamage >= 0) {
-    return primary;
+  if (auxiliaryDamage >= 0) {
+    return auxiliary;
   }
 
   return undefined;
@@ -158,18 +158,18 @@ export function getBestWeaponForTarget(
   if (!targetDef) return undefined;
 
   const targetArmor = targetDef.armor as ArmorClass;
-  const primary = attackerDef.weapons.primary;
-  const secondary = attackerDef.weapons.secondary;
+  const auxiliary = attackerDef.weapons.auxiliary;
+  const special = attackerDef.weapons.special;
 
-  const primaryDamage = primary?.damage_vs_armor[targetArmor] ?? -1;
-  const secondaryDamage = secondary?.damage_vs_armor[targetArmor] ?? -1;
+  const auxiliaryDamage = auxiliary?.damage_vs_armor[targetArmor] ?? -1;
+  const specialDamage = special?.damage_vs_armor[targetArmor] ?? -1;
 
-  // Prefer weapon with higher damage
-  if (secondaryDamage >= 0 && secondaryDamage > primaryDamage) {
-    return secondary;
+  // Prefer special if available and has ammo, otherwise auxiliary
+  if (special && specialDamage >= 0 && attacker.ammo > 0) {
+    return special;
   }
-  if (primaryDamage >= 0) {
-    return primary;
+  if (auxiliaryDamage >= 0) {
+    return auxiliary;
   }
 
   return undefined;
@@ -218,21 +218,23 @@ export function getAllValidTargetsInRange(
   const attackerDef = unitRegistry.get(attacker.definitionId);
   if (!attackerDef) return [];
 
-  const primary = attackerDef.weapons.primary;
-  const secondary = attackerDef.weapons.secondary;
+  const auxiliary = attackerDef.weapons.auxiliary;
+  const special = attackerDef.weapons.special;
 
-  const primaryTargets = primary ? getValidTargets(attacker, primary, fromPosition, gameState) : [];
-  const secondaryTargets = secondary ? getValidTargets(attacker, secondary, fromPosition, gameState) : [];
+  // Get targets for special weapon (if has ammo), otherwise auxiliary
+  const hasSpecial = special && attacker.ammo > 0;
 
-  // Combine and deduplicate by unit ID
+  const specialTargets = hasSpecial ? getValidTargets(attacker, special, fromPosition, gameState) : [];
+  const auxiliaryTargets = getValidTargets(attacker, auxiliary, fromPosition, gameState);
+
+  // Combine and deduplicate by unit ID - prefer special targets when both available
   const targetMap = new Map<string, Unit>();
-  for (const unit of primaryTargets) {
+  for (const unit of auxiliaryTargets) {
     targetMap.set(unit.instanceId, unit);
   }
-  for (const unit of secondaryTargets) {
-    if (!targetMap.has(unit.instanceId)) {
-      targetMap.set(unit.instanceId, unit);
-    }
+  for (const unit of specialTargets) {
+    // Special takes priority if same unit is in both
+    targetMap.set(unit.instanceId, unit);
   }
 
   return Array.from(targetMap.values());
@@ -315,7 +317,7 @@ export function calculateDamage(
   weapon: Weapon,
   fromPosition: Position,
   gameState: GameState,
-  isRetaliation: boolean = false
+  _isRetaliation: boolean = false
 ): number {
   const defenderDef = unitRegistry.get(defender.definitionId);
   if (!defenderDef) return 0;
@@ -372,20 +374,20 @@ export function canRetaliate(
   const defenderDef = unitRegistry.get(defender.definitionId);
   if (!defenderDef) return false;
 
-  // Get the retaliation weapon (prefer secondary/melee)
-  const primaryWeapon = defenderDef.weapons.primary;
-  const secondaryWeapon = defenderDef.weapons.secondary;
+  // Get the retaliation weapon
+  const auxiliaryWeapon = defenderDef.weapons.auxiliary;
+  const specialWeapon = defenderDef.weapons.special;
 
-  // Check if secondary weapon can target and is in range
-  if (secondaryWeapon && canTarget(defender, attacker, secondaryWeapon, gameState)) {
-    if (isInRange(defenderPosition, attacker.position, secondaryWeapon)) {
+  // Check if special weapon can target and is in range
+  if (specialWeapon && defender.ammo > 0 && canTarget(defender, attacker, specialWeapon, gameState)) {
+    if (isInRange(defenderPosition, attacker.position, specialWeapon)) {
       return true;
     }
   }
 
-  // Check if primary weapon can target and is in range
-  if (canTarget(defender, attacker, primaryWeapon, gameState)) {
-    if (isInRange(defenderPosition, attacker.position, primaryWeapon)) {
+  // Check if auxiliary weapon can target and is in range
+  if (canTarget(defender, attacker, auxiliaryWeapon, gameState)) {
+    if (isInRange(defenderPosition, attacker.position, auxiliaryWeapon)) {
       return true;
     }
   }
@@ -426,10 +428,10 @@ export function resolveCombat(
   if (!defenderDestroyed && canRetaliate(defender, attacker, defender.position, gameState)) {
     const defenderDef = unitRegistry.get(defender.definitionId);
     if (defenderDef) {
-      // Use secondary if available (usually melee), otherwise primary
-      const retaliationWeapon = defenderDef.weapons.secondary
-        ? defenderDef.weapons.secondary
-        : defenderDef.weapons.primary;
+      // Prefer special if has ammo, otherwise auxiliary
+      const retaliationWeapon = defenderDef.weapons.special && defender.ammo > 0
+        ? defenderDef.weapons.special
+        : defenderDef.weapons.auxiliary;
 
       // Defender retaliates using their current HP (after taking damage)
       const defenderAfterDamageUnit: Unit = {

@@ -21,12 +21,14 @@ export interface Position {
 // ============================================================================
 // Movement type determines how a unit interacts with terrain costs.
 // Each type has different movement costs for each terrain type.
-export type MovementType = 
+export type MovementType =
   | 'infantry'   // Standard foot movement
-  | 'tread'       // Tanks, heavy vehicles
-  | 'tire'        // Wheeled vehicles
-  | 'fly'         // Aircraft, jump infantry
-  | 'mount';      // Mounted cavalry (future)
+  | 'tread'      // Tanks, heavy vehicles
+  | 'tire'       // Wheeled vehicles
+  | 'fly'        // Jump packs, assault infantry
+  | 'air'        // Aircraft (consumes daily fuel, destroyed if 0)
+  | 'naval'      // Sea units (future)
+  | 'mount';     // Mounted cavalry (future)      // Mounted cavalry (future)
 
 // ============================================================================
 // ARMOR CLASS SYSTEM
@@ -112,8 +114,8 @@ export interface UnitDefinition {
   };
   
   vision: number;  // How far unit can see (for fog of war - future)
-  fuel: number;   // Movement fuel (future feature)
-  ammo: number;    // Weapon ammo (future feature)
+  supply: number;  // Movement supply (rations for infantry, fuel for vehicles/air)
+  ammo: number;   // Weapon ammo for special weapon
   
   can_capture: boolean;  // Can capture buildings
   
@@ -122,8 +124,8 @@ export interface UnitDefinition {
   transport_tags_allowed: string[];
   
   weapons: {
-    primary: Weapon;      // Main weapon
-    secondary?: Weapon;   // Melee weapon (optional)
+    auxiliary: Weapon;   // Required - infinite ammo, typically melee/sidearm
+    special?: Weapon;    // Optional - uses ammo, typically ranged/main weapon
   };
   
   sprite: string;  // Sprite key for rendering
@@ -147,8 +149,8 @@ export interface Unit {
   hasMoved: boolean;  // Can still move this turn
   hasActed: boolean; // Can still act this turn
   
-  fuel: number;       // Remaining movement fuel
-  ammo: number;       // Remaining ammo
+  supply: number;      // Remaining movement supply
+  ammo: number;       // Remaining ammo for special weapon
   
   captureProgress: number; // 0-100 progress on current capture
 }
