@@ -386,7 +386,7 @@ function ActionPanel({
     panelLeft = unitScreenX - PANEL_WIDTH - PANEL_OFFSET;
   }
 
-  const panelTop = unitScreenY;
+  const panelTop = Math.max(unitScreenY, 80);
 
   const handleMove = () => {
     gameEngine.showMovePreview();
