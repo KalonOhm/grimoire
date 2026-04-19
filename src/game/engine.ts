@@ -19,7 +19,7 @@ import {
 } from './types';
 import { eventBus } from './events';
 import { unitRegistry, initializeArmorClasses } from './registry';
-import { getReachableTiles, getAdjacentBlockedTiles, findPath, getMovementCostTo } from './movement';
+import { getReachableTiles, getAdjacentBlockedTiles, findPath, getMovementCostTo, getAdjacentTiles } from './movement';
 import { calculateDamage, canRetaliate, getBestRetaliationWeapon, getBestWeaponForTarget, getAllValidTargetsInRange } from './combat';
 
 // ============================================================================
@@ -256,6 +256,7 @@ class GameEngine {
             unit.supply = 0;
             this.removeUnit(unit.instanceId);
             eventBus.emit('UNIT_DESTROYED', { unitId: unit.instanceId });
+            this.checkWinCondition();
             continue;
           }
         }
@@ -279,6 +280,63 @@ class GameEngine {
 
     // Add income to player's credits
     this.state.players[player].credits += income;
+
+    // Repair adjacent units and resupply
+    const BUILDING_REPAIR: Record<BuildingType, number> = {
+      hq: 5,
+      factory: 5,
+      city: 2,
+    };
+    const mapHeight = this.state.map.length;
+    const mapWidth = this.state.map[0]?.length || 0;
+
+    for (const building of this.state.buildings.values()) {
+      if (building.owner !== player) continue;
+
+      const repairAmount = BUILDING_REPAIR[building.buildingType];
+      const adjacentPositions = getAdjacentTiles(building.position, mapHeight, mapWidth);
+
+      for (const pos of adjacentPositions) {
+        const tileContent = this.state.map[pos.y]?.[pos.x]?.content;
+        if (tileContent?.type !== 'unit') continue;
+
+        const unit = this.state.units.get(tileContent.unitId);
+        if (!unit || unit.owner !== player) continue;
+
+        const definition = unitRegistry.get(unit.definitionId);
+        if (!definition) continue;
+
+        let actualRepair = 0;
+        let repairCost = 0;
+
+        // Only repair if damaged
+        if (unit.currentHp < unit.maxHp) {
+          const hpToHeal = Math.min(repairAmount, unit.maxHp - unit.currentHp);
+          const costPerHp = Math.floor(definition.cost * 0.1);
+          repairCost = hpToHeal * costPerHp;
+
+          // Check if player can afford
+          if (this.state.players[player].credits >= repairCost) {
+            this.state.players[player].credits -= repairCost;
+            unit.currentHp = Math.min(unit.maxHp, unit.currentHp + repairAmount);
+            actualRepair = hpToHeal;
+          }
+        }
+
+        // Always restore supply and ammo (free)
+        unit.supply = definition.supply;
+        unit.ammo = definition.ammo;
+
+        if (actualRepair > 0 || definition.supply === unit.supply || definition.ammo === unit.ammo) {
+          eventBus.emit('UNIT_REPAIRED', {
+            unitId: unit.instanceId,
+            hpRestored: actualRepair,
+            supplyRestored: true,
+            cost: repairCost,
+          });
+        }
+      }
+    }
 
     // Emit events for UI updates
     eventBus.emit('INCOME_RECEIVED', { player, amount: income });
@@ -905,6 +963,9 @@ class GameEngine {
 
     // Emit destruction event
     eventBus.emit('UNIT_DESTROYED', { unitId });
+
+    // Check win condition
+    this.checkWinCondition();
   }
 
   // ========================================================================
@@ -973,6 +1034,8 @@ class GameEngine {
       if (unit.owner === 1) player1Units++;
       if (unit.owner === 2) player2Units++;
     }
+
+    console.log('checkWinCondition called', { player1Units, player2Units, winner: this.state.winner });
 
     // Check HQ destruction status (Wargroove-style: destroyed when HP = 0)
     for (const building of this.state.buildings.values()) {

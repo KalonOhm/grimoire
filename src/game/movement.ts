@@ -13,6 +13,23 @@ function manhattanDistance(a: Position, b: Position): number {
   return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 }
 
+export function getAdjacentTiles(position: Position, mapHeight: number, mapWidth: number): Position[] {
+  const { x, y } = position;
+  const adjacent: Position[] = [];
+  const cardinalDirections = [
+    { x: x, y: y - 1 },
+    { x: x, y: y + 1 },
+    { x: x - 1, y: y },
+    { x: x + 1, y: y },
+  ];
+  for (const pos of cardinalDirections) {
+    if (pos.x >= 0 && pos.x < mapWidth && pos.y >= 0 && pos.y < mapHeight) {
+      adjacent.push(pos);
+    }
+  }
+  return adjacent;
+}
+
 function positionKey(pos: Position): string {
   return `${pos.x},${pos.y}`;
 }

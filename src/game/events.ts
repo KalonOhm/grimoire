@@ -24,6 +24,7 @@ interface EventMap {
   TURN_END: { player: PlayerId };
   INCOME_RECEIVED: { player: PlayerId; amount: number };
   UNIT_REFRESHED: { unitId: string };
+  UNIT_REPAIRED: { unitId: string; hpRestored: number; supplyRestored: boolean; cost: number };
   GAME_OVER: { winner: PlayerId };
   CREDITS_CHANGED: { player: PlayerId; credits: number };
   UI_ACTION_REQUESTED: { action: string; context: unknown };
