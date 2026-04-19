@@ -782,9 +782,13 @@ class GameEngine {
     // Transition to resolve phase
     this.setPhase('UNIT_ACTION_RESOLVE');
 
-    // Resolve the attack - prefer special if available and has ammo
-    const usedSpecial = !!definition.weapons.special && attacker.ammo > 0;
-    const weapon = usedSpecial ? definition.weapons.special! : definition.weapons.auxiliary;
+    // Get best weapon using new selection logic (checks range + armor preference)
+    const weapon = getBestWeaponForTarget(attacker, defender);
+    if (!weapon) {
+      this.setPhase('IDLE');
+      return;
+    }
+    const usedSpecial = !!(weapon && definition.weapons.special && weapon === definition.weapons.special);
     const combatResult = this.resolveAttack(
       attacker,
       defender,

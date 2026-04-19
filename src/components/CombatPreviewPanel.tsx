@@ -66,7 +66,7 @@ export function CombatPreviewPanel({ state, hoveredTile }: CombatPreviewPanelPro
       }}
     >
       <div className="combat-preview-row weapon-name">
-        <span className="weapon-label">{isSpecialWeapon ? 'Missiles' : 'Bolter'}</span>
+        <span className="weapon-label">{isSpecialWeapon ? 'Special' : 'Auxiliary'}</span>
       </div>
       <div className="combat-preview-row">
         <span className="combat-preview-label">Your Damage:</span>

@@ -243,19 +243,23 @@ export function getAllValidTargetsInRange(
   const auxiliary = attackerDef.weapons.auxiliary;
   const special = attackerDef.weapons.special;
 
-  // Get targets for special weapon (if has ammo), otherwise auxiliary
-  const hasSpecial = special && attacker.ammo > 0;
+  // Get targets for special weapon if has ammo
+  const specialTargets = (special && attacker.ammo > 0) 
+    ? getValidTargets(attacker, special, fromPosition, gameState) 
+    : [];
+  
+  // Get targets for auxiliary weapon
+  const auxiliaryTargets = auxiliary 
+    ? getValidTargets(attacker, auxiliary, fromPosition, gameState) 
+    : [];
 
-  const specialTargets = hasSpecial ? getValidTargets(attacker, special, fromPosition, gameState) : [];
-  const auxiliaryTargets = getValidTargets(attacker, auxiliary, fromPosition, gameState);
-
-  // Combine and deduplicate by unit ID - prefer special targets when both available
+  // Combine and deduplicate by unit ID - prefer special when both in range
   const targetMap = new Map<string, Unit>();
   for (const unit of auxiliaryTargets) {
     targetMap.set(unit.instanceId, unit);
   }
+  // Special takes priority if same unit is in both lists
   for (const unit of specialTargets) {
-    // Special takes priority if same unit is in both
     targetMap.set(unit.instanceId, unit);
   }
 
