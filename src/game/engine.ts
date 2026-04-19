@@ -711,9 +711,14 @@ class GameEngine {
     const definition = unitRegistry.get(unit.definitionId);
     if (!definition) return;
 
-    // Check if special weapon allows fire-after-move (optional - always allowed if no special)
-    if (definition.weapons.special && !definition.weapons.special.fire_after_move) {
-      // Can't fire after moving, go to UNIT_SPENT which auto-transitions to IDLE
+    // Check fire-after-move capability:
+    // - If special doesn't allow fire_after_move and doesn't have auxiliary, can't attack after moving
+    // - If auxiliary allows fire_after_move, can attack after moving
+    const canFireAfterMove = definition.weapons.auxiliary?.fire_after_move ||
+      !definition.weapons.special?.fire_after_move ||
+      unit.ammo <= 0;
+    
+    if (!canFireAfterMove) {
       this.setPhase('UNIT_SPENT');
       return;
     }
