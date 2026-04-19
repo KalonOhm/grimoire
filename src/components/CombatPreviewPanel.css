@@ -21,6 +21,21 @@
   margin-bottom: 0;
 }
 
+.combat-preview-row.weapon-name {
+  justify-content: center;
+  margin-bottom: 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.combat-preview-row.weapon-name .weapon-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #ffd700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
 .combat-preview-row.poor-trade .combat-preview-value {
   color: #ff4444;
   font-weight: bold;

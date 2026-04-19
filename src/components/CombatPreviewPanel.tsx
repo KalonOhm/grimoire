@@ -1,7 +1,7 @@
 import { Position, GameState } from '../game/types';
 import { gameEngine } from '../game/engine';
 import { unitRegistry } from '../game/registry';
-import { getValidTargets } from '../game/combat';
+import { getValidTargets, getBestWeaponForTarget } from '../game/combat';
 import './CombatPreviewPanel.css';
 
 const TILE_SIZE = 64;
@@ -38,15 +38,20 @@ export function CombatPreviewPanel({ state, hoveredTile }: CombatPreviewPanelPro
   // Only show preview if defender is enemy and in weapon range
   if (defender.owner === attacker.owner) return null;
 
-  // Check if in weapon range - prefer special if has ammo
-  const hasSpecial = !!attackerDef.weapons.special && attacker.ammo > 0;
-  const weapon = hasSpecial ? attackerDef.weapons.special! : attackerDef.weapons.auxiliary;
+  // Use the same weapon selection logic as combat
+  const weapon = getBestWeaponForTarget(attacker, defender);
+  if (!weapon) return null;
+  
   const validTargets = getValidTargets(attacker, weapon, attacker.position, state);
   const isInRange = validTargets.some(t => t.instanceId === defenderId);
   if (!isInRange) return null;
 
   const preview = gameEngine.previewCombat(state.selectedUnitId, defenderId);
   if (!preview) return null;
+
+  // Determine weapon name for display
+  const isSpecial = weapon === attackerDef.weapons.special;
+  const isSpecialWeapon = isSpecial && attacker.ammo > 0;
 
   // Calculate position below selected unit
   const attackerScreenX = attacker.position.x * TILE_SIZE + TILE_SIZE / 2;
@@ -60,6 +65,9 @@ export function CombatPreviewPanel({ state, hoveredTile }: CombatPreviewPanelPro
         top: attackerScreenY,
       }}
     >
+      <div className="combat-preview-row weapon-name">
+        <span className="weapon-label">{isSpecialWeapon ? 'Missiles' : 'Bolter'}</span>
+      </div>
       <div className="combat-preview-row">
         <span className="combat-preview-label">Your Damage:</span>
         <span className="combat-preview-value">{preview.attackerDamage}</span>

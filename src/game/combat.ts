@@ -132,13 +132,24 @@ export function getBestRetaliationWeapon(
   const auxiliaryDamage = auxiliary?.damage_vs_armor[targetArmor] ?? -1;
   const specialDamage = special?.damage_vs_armor[targetArmor] ?? -1;
 
-  // Prefer special if available and has ammo, otherwise auxiliary
-  if (special && specialDamage >= 0 && defender.ammo > 0) {
-    return special;
-  }
-  if (auxiliaryDamage >= 0) {
+  // Get viable weapons (check range for BOTH)
+  const auxiliaryViable = auxiliary && auxiliaryDamage >= 0 && 
+      isInRange(defender.position, target.position, auxiliary);
+  const specialViable = special && specialDamage >= 0 && defender.ammo > 0 && 
+      isInRange(defender.position, target.position, special);
+
+  // Infantry types → use auxiliary (conserve special ammo)
+  const preferAuxiliary = targetArmor === 'light_infantry' || 
+                       targetArmor === 'heavy_infantry' || 
+                       targetArmor === 'mounted';
+  
+  if (preferAuxiliary && auxiliaryViable) {
     return auxiliary;
   }
+
+  // Default priority: special first (if in range), then auxiliary
+  if (specialViable) return special;
+  if (auxiliaryViable) return auxiliary;
 
   return undefined;
 }
@@ -164,13 +175,24 @@ export function getBestWeaponForTarget(
   const auxiliaryDamage = auxiliary?.damage_vs_armor[targetArmor] ?? -1;
   const specialDamage = special?.damage_vs_armor[targetArmor] ?? -1;
 
-  // Prefer special if available and has ammo, otherwise auxiliary
-  if (special && specialDamage >= 0 && attacker.ammo > 0) {
-    return special;
-  }
-  if (auxiliaryDamage >= 0) {
+  // Get viable weapons (check range for BOTH)
+  const auxiliaryViable = auxiliary && auxiliaryDamage >= 0 && 
+      isInRange(attacker.position, target.position, auxiliary);
+  const specialViable = special && specialDamage >= 0 && attacker.ammo > 0 && 
+      isInRange(attacker.position, target.position, special);
+
+  // Infantry types → use auxiliary (conserve special ammo)
+  const preferAuxiliary = targetArmor === 'light_infantry' || 
+                       targetArmor === 'heavy_infantry' || 
+                       targetArmor === 'mounted';
+  
+  if (preferAuxiliary && auxiliaryViable) {
     return auxiliary;
   }
+
+  // Default priority: special first (if in range), then auxiliary
+  if (specialViable) return special;
+  if (auxiliaryViable) return auxiliary;
 
   return undefined;
 }
