@@ -172,8 +172,6 @@ export function GameBoard({ state, onStateChange, onTileHover, onTileLeave }: Ga
           const target = attackPreview.targets.find(t => t.position.x === x && t.position.y === y);
           if (target) {
             gameEngine.executeAttack(target.unitId);
-          } else {
-            gameEngine.hideAttackPreview();
           }
         }
         break;
