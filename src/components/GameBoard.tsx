@@ -382,9 +382,13 @@ function ActionPanel({
   const validSpecialTargets = specialWeapon ? getValidTargets(unit, specialWeapon, unit.position, defState || state) : [];
   const hasAnyTargets = validAuxTargets.length > 0 || validSpecialTargets.length > 0;
   
-  // Check fire-after-move: if moved, only auxiliary can fire (check auxiliary.fire_after_move)
-  const fireAfterMove = unit.hasMoved ? (auxiliaryWeapon?.fire_after_move ?? false) : true;
-  const canAttack = hasAnyTargets && !unit.hasActed && (!unit.hasMoved || fireAfterMove);
+  // Check fire-after-move: check each weapon individually
+  // If hasn't moved: any weapon can fire
+  // If has moved: can fire if Auxiliary has fire_after_move OR Special has fire_after_move
+  const canFireAfterMove = !unit.hasMoved || 
+    (auxiliaryWeapon?.fire_after_move === true) || 
+    (specialWeapon && specialWeapon.fire_after_move === true);
+  const canAttack = hasAnyTargets && !unit.hasActed && (!unit.hasMoved || canFireAfterMove);
   const canCapture = gameEngine.canCapture();
 
   const unitScreenX = unit.position.x * TILE_SIZE + TILE_SIZE / 2;
