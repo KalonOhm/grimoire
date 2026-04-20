@@ -674,16 +674,8 @@ class GameEngine {
     const definition = unitRegistry.get(unit.definitionId);
     if (!definition) return;
 
-    // DEBUG: Log attack preview from current position
-    console.log('[DEBUG] showAttackPreviewFromCurrent called', {
-      unitId,
-      unitDefId: definition.id,
-      unitAmmo: unit.ammo,
-    });
-
     // Get all valid targets in range (using either weapon)
     const targetUnits = getAllValidTargetsInRange(unit, unit.position, this.state);
-    console.log('[DEBUG] targetUnits from current:', targetUnits.length, targetUnits.map(u => ({ id: u.definitionId, pos: u.position })));
     // Transform to event format
     const targets = targetUnits.map(u => ({ unitId: u.instanceId, position: u.position }));
 
@@ -719,46 +711,29 @@ class GameEngine {
     const definition = unitRegistry.get(unit.definitionId);
     if (!definition) return;
 
-    // DEBUG: Log fire-after-move check
-    console.log('[DEBUG] showAttackPreviewAfterMove called', {
-      unitId,
-      unitDefId: definition.id,
-      position,
-      unitAmmo: unit.ammo,
-      auxFireAfterMove: definition.weapons.auxiliary?.fire_after_move,
-      specialFireAfterMove: definition.weapons.special?.fire_after_move,
-      hasSpecial: !!definition.weapons.special,
-    });
-
     // Check fire-after-move capability:
     // - If special doesn't allow fire_after_move and doesn't have auxiliary, can't attack after moving
     // - If auxiliary allows fire_after_move, can attack after moving
     const canFireAfterMove = definition.weapons.auxiliary?.fire_after_move ||
       !definition.weapons.special?.fire_after_move ||
       unit.ammo <= 0;
-
-    console.log('[DEBUG] canFireAfterMove:', canFireAfterMove);
     
     if (!canFireAfterMove) {
-      console.log('[DEBUG] Blocking attack - fire_after_move not allowed');
       this.setPhase('UNIT_SPENT');
       return;
     }
 
     // Get targets from new position (using either weapon)
     const targetUnits = getAllValidTargetsInRange(unit, position, this.state);
-    console.log('[DEBUG] targetUnits found:', targetUnits.length, targetUnits.map(u => ({ id: u.definitionId, pos: u.position })));
     const targets = targetUnits.map(u => ({ unitId: u.instanceId, position: u.position }));
 
     // If no targets in range, go to post-move action phase
     if (targets.length === 0) {
-      console.log('[DEBUG] No targets in range, going to UNIT_MOVED');
       this.state.attackPreview = null;
       this.setPhase('UNIT_MOVED');
       return;
     }
 
-    console.log('[DEBUG] Setting attackPreview with targets:', targets);
     this.state.attackPreview = { targets };
 
     eventBus.emit('ATTACK_PREVIEW_SHOWN', { unitId, targets });

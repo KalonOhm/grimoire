@@ -106,14 +106,6 @@ export function canTarget(
   // Look up damage for defender's armor class
   const damageValue = weapon.damage_vs_armor[defenderDef.armor as ArmorClass];
   
-  // DEBUG
-  console.log('[DEBUG] canTarget check', {
-    weapon: weapon.name,
-    defenderArmor: defenderDef.armor,
-    defenderId: defenderDef.id,
-    damageValue,
-  });
-  
   // -1 or undefined = cannot target
   return damageValue !== undefined && damageValue >= 0;
 }
@@ -220,37 +212,16 @@ export function getValidTargets(
 ): Unit[] {
   const targets: Unit[] = [];
   
-  // DEBUG
-  const allEnemyUnits: any[] = [];
-  for (const unit of gameState.units.values()) {
-    if (unit.owner === attacker.owner) continue;
-    allEnemyUnits.push({ id: unit.definitionId, pos: unit.position, owner: unit.owner });
-  }
-  console.log('[DEBUG] getValidTargets', { 
-    weaponName: weapon.name, 
-    weaponRange: [weapon.min_range, weapon.max_range],
-    fromPosition,
-    enemyUnits: allEnemyUnits
-  });
-
   for (const unit of gameState.units.values()) {
     // Skip own units
     if (unit.owner === attacker.owner) continue;
     
     // Check if can target this armor class
-    if (!canTarget(attacker, unit, weapon, gameState)) {
-      console.log('[DEBUG] canTarget FALSE for', unit.definitionId);
-      continue;
-    }
+    if (!canTarget(attacker, unit, weapon, gameState)) continue;
     
     // Check if in range
-    const distance = Math.abs(fromPosition.x - unit.position.x) + Math.abs(fromPosition.y - unit.position.y);
-    if (!isInRange(fromPosition, unit.position, weapon)) {
-      console.log('[DEBUG] NOT IN RANGE:', unit.definitionId, 'distance:', distance, 'range:', [weapon.min_range, weapon.max_range]);
-      continue;
-    }
+    if (!isInRange(fromPosition, unit.position, weapon)) continue;
     
-    console.log('[DEBUG] ADDING TARGET:', unit.definitionId);
     targets.push(unit);
   }
   
@@ -272,28 +243,15 @@ export function getAllValidTargetsInRange(
   const auxiliary = attackerDef.weapons.auxiliary;
   const special = attackerDef.weapons.special;
 
-  // DEBUG
-  console.log('[DEBUG] getAllValidTargetsInRange', {
-    attackerDef: attackerDef.id,
-    fromPosition,
-    ammo: attacker.ammo,
-    hasAux: !!auxiliary,
-    hasSpecial: !!special,
-  });
-
   // Get targets for auxiliary weapon (always checked - even without ammo)
   const auxiliaryTargets = auxiliary 
     ? getValidTargets(attacker, auxiliary, fromPosition, gameState) 
     : [];
 
-  console.log('[DEBUG] auxiliaryTargets:', auxiliaryTargets.map(u => ({ id: u.definitionId, pos: u.position })));
-
   // Get targets for special weapon (only if has ammo)
   const specialTargets = (special && attacker.ammo > 0) 
     ? getValidTargets(attacker, special, fromPosition, gameState) 
     : [];
-
-  console.log('[DEBUG] specialTargets:', specialTargets.map(u => ({ id: u.definitionId, pos: u.position })));
 
   // Combine: first add all auxiliary targets, then add special targets ONLY if not already in range
   // This ensures auxiliary-attackable targets are never excluded
@@ -304,8 +262,6 @@ export function getAllValidTargetsInRange(
       allTargets.push(unit);
     }
   }
-
-  console.log('[DEBUG] combined allTargets:', allTargets.map(u => ({ id: u.definitionId, pos: u.position })));
 
   return allTargets;
 }

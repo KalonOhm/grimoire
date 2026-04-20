@@ -396,6 +396,17 @@ function ActionPanel({
   };
 
   const handleAttack = () => {
+    const currentPhase = gameEngine.getState()?.phase;
+    if (currentPhase === 'UNIT_MOVED') {
+      // After moving, show targets from the NEW position
+      const state = gameEngine.getState();
+      const selectedUnit = state?.units.get(unit.instanceId);
+      if (selectedUnit) {
+        gameEngine.showAttackPreviewAfterMove(selectedUnit.position);
+        return;
+      }
+    }
+    // From UNIT_SELECTED or UNIT_MOVED without fire-after-move: use current position
     gameEngine.showAttackPreviewFromCurrent();
   };
 
