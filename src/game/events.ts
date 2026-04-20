@@ -26,7 +26,8 @@ interface EventMap {
   UNIT_REFRESHED: { unitId: string };
   UNIT_REPAIRED: { unitId: string; hpRestored: number; supplyRestored: boolean; cost: number };
   GAME_OVER: { winner: PlayerId };
-  CREDITS_CHANGED: { player: PlayerId; credits: number };
+  RESOURCES_CHANGED: { player: PlayerId; resources: number };
+  UNIT_CONTESTED: { unitId: string; buildingId: string; enemiesCount: number };
   UI_ACTION_REQUESTED: { action: string; context: unknown };
   GAME_STATE_FULL_UPDATE: Record<string, unknown>;
 }

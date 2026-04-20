@@ -156,8 +156,8 @@ export function createInitialState(mapData: MapData): GameState {
     activePlayer: 1,     // Player 1 goes first
     currentTurn: 1,
     players: {
-      1: { credits: 0 },
-      2: { credits: 0 },
+      1: { resources: 0 },
+      2: { resources: 0 },
     },
     units,
     buildings,
@@ -278,8 +278,8 @@ class GameEngine {
       }
     }
 
-    // Add income to player's credits
-    this.state.players[player].credits += income;
+    // Add income to player's resources
+    this.state.players[player].resources += income;
 
     // Repair adjacent units and resupply
     const BUILDING_REPAIR: Record<BuildingType, number> = {
@@ -316,8 +316,8 @@ class GameEngine {
           repairCost = hpToHeal * costPerHp;
 
           // Check if player can afford
-          if (this.state.players[player].credits >= repairCost) {
-            this.state.players[player].credits -= repairCost;
+          if (this.state.players[player].resources >= repairCost) {
+            this.state.players[player].resources -= repairCost;
             unit.currentHp = Math.min(unit.maxHp, unit.currentHp + repairAmount);
             actualRepair = hpToHeal;
           }
@@ -875,6 +875,80 @@ class GameEngine {
   }
 
   /**
+   * Execute contest action to stop enemy from capturing a building.
+   * - Apply 10% damage to each enemy capturing unit
+   * - Apply 5% × number of enemy capturers damage to contester
+   * - Clear capturingBuildingId from all enemy capturers
+   */
+  executeContest(buildingId: string): void {
+    if (!this.state) return;
+
+    const validPhases = ['UNIT_SELECTED', 'UNIT_MOVED'];
+    if (!validPhases.includes(this.state.phase)) return;
+
+    const unitId = this.state.selectedUnitId;
+    if (!unitId) return;
+
+    const unit = this.state.units.get(unitId);
+    if (!unit) return;
+
+    if (unit.hasActed) return;
+
+    const building = this.state.buildings.get(buildingId);
+    if (!building) return;
+
+    const isAdjacent = 
+      Math.abs(unit.position.x - building.position.x) + 
+      Math.abs(unit.position.y - building.position.y) === 1;
+    if (!isAdjacent) return;
+
+    // Find all ENEMY units currently capturing this building
+    const enemyCapturers = [...this.state.units.values()].filter(
+      u => u.owner !== unit.owner && u.capturingBuildingId === buildingId
+    );
+
+    if (enemyCapturers.length === 0) return;
+
+    // Apply 10% damage to each enemy capturer
+    for (const enemy of enemyCapturers) {
+      const damage = Math.floor(enemy.maxHp * 0.1);
+      enemy.currentHp = Math.max(0, enemy.currentHp - damage);
+      if (enemy.currentHp === 0) {
+        this.removeUnit(enemy.instanceId);
+      }
+    }
+
+    // Apply 5% × number of enemy capturers (max 15%) to contester
+    const contesterDamage = Math.min(enemyCapturers.length * 5, 15);
+    const actualDamage = Math.floor(unit.maxHp * (contesterDamage / 100));
+    unit.currentHp = Math.max(0, unit.currentHp - actualDamage);
+    if (unit.currentHp === 0) {
+      this.removeUnit(unit.instanceId);
+      this.setPhase('UNIT_SPENT');
+      return;
+    }
+
+    // Clear capturingBuildingId from all enemy capturers
+    for (const enemy of enemyCapturers) {
+      const enemyUnit = this.state.units.get(enemy.instanceId);
+      if (enemyUnit) {
+        enemyUnit.capturingBuildingId = null;
+      }
+    }
+
+    // Mark contester as having acted
+    unit.hasActed = true;
+
+    this.state.selectedUnitId = null;
+    this.state.movePreview = null;
+    this.state.attackPreview = null;
+
+    eventBus.emit('UNIT_CONTESTED', { unitId, buildingId, enemiesCount: enemyCapturers.length });
+
+    this.setPhase('UNIT_SPENT');
+  }
+
+  /**
    * Check if unit can capture any adjacent building.
    */
   canCapture(): boolean {
@@ -898,6 +972,36 @@ class GameEngine {
         Math.abs(unit.position.x - building.position.x) + 
         Math.abs(unit.position.y - building.position.y) === 1;
       if (isAdjacent) return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Check if unit can contest an adjacent building being captured by enemy.
+   */
+  canContest(): boolean {
+    if (!this.state) return false;
+
+    const unitId = this.state.selectedUnitId;
+    if (!unitId) return false;
+
+    const unit = this.state.units.get(unitId);
+    if (!unit) return false;
+
+    if (unit.hasActed) return false;
+
+    for (const building of this.state.buildings.values()) {
+      const isAdjacent = 
+        Math.abs(unit.position.x - building.position.x) + 
+        Math.abs(unit.position.y - building.position.y) === 1;
+      if (!isAdjacent) continue;
+
+      // Check if enemy is capturing this building
+      const enemyCapturing = [...this.state.units.values()].find(
+        u => u.owner !== unit.owner && u.capturingBuildingId === building.id
+      );
+      if (enemyCapturing) return true;
     }
 
     return false;

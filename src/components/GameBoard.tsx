@@ -389,6 +389,7 @@ function ActionPanel({
     (specialWeapon && specialWeapon.fire_after_move === true);
   const canAttack = hasAnyTargets && !unit.hasActed && (!unit.hasMoved || canFireAfterMove);
   const canCapture = gameEngine.canCapture();
+  const canContest = gameEngine.canContest();
 
   const unitScreenX = unit.position.x * TILE_SIZE + TILE_SIZE / 2;
   const unitScreenY = unit.position.y * TILE_SIZE + TILE_SIZE / 2;
@@ -447,6 +448,29 @@ function ActionPanel({
     }
   };
 
+  const handleContest = () => {
+    const state = gameEngine.getState();
+    if (!state) return;
+    
+    const selectedUnit = state.units.get(unit.instanceId);
+    if (!selectedUnit) return;
+    
+    for (const building of state.buildings.values()) {
+      const isAdjacent = 
+        Math.abs(selectedUnit.position.x - building.position.x) + 
+        Math.abs(selectedUnit.position.y - building.position.y) === 1;
+      if (!isAdjacent) continue;
+      
+      const enemyCapturing = [...state.units.values()].find(
+        u => u.owner !== selectedUnit.owner && u.capturingBuildingId === building.id
+      );
+      if (enemyCapturing) {
+        gameEngine.executeContest(building.id);
+        return;
+      }
+    }
+  };
+
   const handleCancel = () => {
     gameEngine.deselectUnit();
   };
@@ -469,6 +493,9 @@ function ActionPanel({
       )}
       {canCapture && (
         <button onClick={handleCapture}>Capture</button>
+      )}
+      {canContest && (
+        <button onClick={handleContest}>Contest</button>
       )}
       <button onClick={handleWait}>Wait</button>
       <button className="cancel-btn" onClick={handleCancel}>Cancel</button>

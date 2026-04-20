@@ -94,7 +94,7 @@ export interface UnitDefinition {
   name: string;                         // Display name
   faction: string;                       // e.g., "space_marines"
   category: UnitCategory;               // For organization/rendering hints
-  cost: number;                         // Credits to purchase
+  cost: number;                         // Resources to purchase
   
   // Roster determines visible models and total HP
   roster: Roster;
@@ -280,8 +280,8 @@ export interface GameState {
   
   // Player resources
   players: {
-    1: { credits: number };
-    2: { credits: number };
+    1: { resources: number };
+    2: { resources: number };
   };
   
   // Game entities

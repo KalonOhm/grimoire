@@ -1,5 +1,5 @@
 import React from 'react';
-import { usePhase, useActivePlayer, useCurrentTurn, useCredits, useWinner } from './useGameEvent';
+import { usePhase, useActivePlayer, useCurrentTurn, useResources, useWinner } from './useGameEvent';
 import { gameEngine } from '../game/engine';
 import './GameUI.css';
 
@@ -7,7 +7,7 @@ export function GameUI() {
   const phase = usePhase();
   const activePlayer = useActivePlayer();
   const currentTurn = useCurrentTurn();
-  const credits = useCredits(activePlayer);
+  const resources = useResources(activePlayer);
   const winner = useWinner();
 
   const handleEndTurn = () => {
@@ -35,8 +35,8 @@ export function GameUI() {
             Player {activePlayer}'s Turn
           </span>
         </div>
-        <div className="credits">
-          Credits: {credits.toLocaleString()}
+        <div className="resources">
+          Resources: {resources.toLocaleString()}
         </div>
       </div>
 

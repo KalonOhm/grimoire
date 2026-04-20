@@ -34,7 +34,7 @@ export function useGameState<T>(getValue: () => T, deps: unknown[] = []): T {
       eventBus.on('TURN_START', checkValue),
       eventBus.on('TURN_END', checkValue),
       eventBus.on('GAME_OVER', checkValue),
-      eventBus.on('CREDITS_CHANGED', checkValue),
+      eventBus.on('RESOURCES_CHANGED', checkValue),
     ];
 
     return () => {
@@ -69,10 +69,10 @@ export function useSelectedUnit(): string | null {
   });
 }
 
-export function useCredits(player: number): number {
+export function useResources(player: number): number {
   return useGameState(() => {
     const state = gameEngine.getState();
-    return state?.players[player as 1 | 2]?.credits || 0;
+    return state?.players[player as 1 | 2]?.resources || 0;
   }, [player]);
 }
 

@@ -139,8 +139,8 @@ export function App() {
             Player {gameEngine.getState()?.activePlayer || 1}'s Turn
           </span>
         </div>
-        <div className="credits">
-          Credits: {(gameEngine.getState()?.players[gameEngine.getState()?.activePlayer || 1]?.credits || 0).toLocaleString()}
+        <div className="resources">
+          Resources: {(gameEngine.getState()?.players[gameEngine.getState()?.activePlayer || 1]?.resources || 0).toLocaleString()}
         </div>
       </div>
       <div className="game-board-wrapper">
