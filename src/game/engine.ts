@@ -971,7 +971,17 @@ class GameEngine {
       const isAdjacent = 
         Math.abs(unit.position.x - building.position.x) + 
         Math.abs(unit.position.y - building.position.y) === 1;
-      if (isAdjacent) return true;
+      if (!isAdjacent) continue;
+
+      // If building is neutral and enemy is already capturing, can't start capture - must contest instead
+      if (building.owner === null) {
+        const enemyCapturing = [...this.state.units.values()].find(
+          u => u.owner !== unit.owner && u.capturingBuildingId === building.id
+        );
+        if (enemyCapturing) continue; // skip this building, check others
+      }
+
+      return true;
     }
 
     return false;
