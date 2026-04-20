@@ -231,11 +231,13 @@ export function getValidTargets(
 /**
  * Get all valid targets using either primary or secondary weapon.
  * Returns units that can be attacked with either weapon.
+ * @param fireAfterMoveOnly if true, only include targets from weapons with fire_after_move: true
  */
 export function getAllValidTargetsInRange(
   attacker: Unit,
   fromPosition: Position,
-  gameState: GameState
+  gameState: GameState,
+  fireAfterMoveOnly: boolean = false
 ): Unit[] {
   const attackerDef = unitRegistry.get(attacker.definitionId);
   if (!attackerDef) return [];
@@ -243,13 +245,17 @@ export function getAllValidTargetsInRange(
   const auxiliary = attackerDef.weapons.auxiliary;
   const special = attackerDef.weapons.special;
 
+  // Determine which weapons to use based on fire_after_move setting
+  const useAuxiliary = auxiliary && (!fireAfterMoveOnly || auxiliary.fire_after_move === true);
+  const useSpecial = special && attacker.ammo > 0 && (!fireAfterMoveOnly || special.fire_after_move === true);
+
   // Get targets for auxiliary weapon (always checked - even without ammo)
-  const auxiliaryTargets = auxiliary 
-    ? getValidTargets(attacker, auxiliary, fromPosition, gameState) 
+  const auxiliaryTargets = useAuxiliary
+    ? getValidTargets(attacker, auxiliary!, fromPosition, gameState) 
     : [];
 
   // Get targets for special weapon (only if has ammo)
-  const specialTargets = (special && attacker.ammo > 0) 
+  const specialTargets = useSpecial 
     ? getValidTargets(attacker, special, fromPosition, gameState) 
     : [];
 

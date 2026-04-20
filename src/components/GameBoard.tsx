@@ -2,7 +2,7 @@ import { useCallback, useRef } from 'react';
 import { GameState, Position, Unit } from '../game/types';
 import { unitRegistry } from '../game/registry';
 import { gameEngine } from '../game/engine';
-import { getValidTargets } from '../game/combat';
+import { getAllValidTargetsInRange } from '../game/combat';
 import './GameBoard.css';
 
 const TILE_SIZE = 64;
@@ -376,11 +376,10 @@ function ActionPanel({
   const auxiliaryWeapon = def.weapons.auxiliary;
   const specialWeapon = def.weapons.special && unit.ammo > 0 ? def.weapons.special : null;
   
-  // Get targets for both weapons combined (from current position)
+  // Get targets: if unit has moved, only include targets from weapons with fire_after_move: true
   const defState = gameEngine.getState();
-  const validAuxTargets = auxiliaryWeapon ? getValidTargets(unit, auxiliaryWeapon, unit.position, defState || state) : [];
-  const validSpecialTargets = specialWeapon ? getValidTargets(unit, specialWeapon, unit.position, defState || state) : [];
-  const hasAnyTargets = validAuxTargets.length > 0 || validSpecialTargets.length > 0;
+  const allValidTargets = getAllValidTargetsInRange(unit, unit.position, defState || state, unit.hasMoved);
+  const hasAnyTargets = allValidTargets.length > 0;
   
   // Check fire-after-move: check each weapon individually
   // If hasn't moved: any weapon can fire

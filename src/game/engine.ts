@@ -723,8 +723,8 @@ class GameEngine {
       return;
     }
 
-    // Get targets from new position (using either weapon)
-    const targetUnits = getAllValidTargetsInRange(unit, position, this.state);
+    // Get targets from new position (only weapons that allow fire_after_move)
+    const targetUnits = getAllValidTargetsInRange(unit, position, this.state, true);
     const targets = targetUnits.map(u => ({ unitId: u.instanceId, position: u.position }));
 
     // If no targets in range, go to post-move action phase
