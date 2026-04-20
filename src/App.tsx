@@ -155,9 +155,28 @@ export function App() {
         <div className="phase-indicator">
           Phase: {gameEngine.getState()?.phase || 'IDLE'}
         </div>
-        <button className="end-turn-btn" onClick={() => gameEngine.endTurn()}>
-          End Turn
-        </button>
+        <div className="controls">
+          <button 
+            className="cancel-btn" 
+            onClick={() => {
+              const state = gameEngine.getState();
+              if (state) {
+                if (state.selectedUnitId) {
+                  gameEngine.deselectUnit();
+                } else if (state.selectedBuildingId) {
+                  gameEngine.deselectBuilding();
+                }
+              }
+            }}
+            disabled={gameEngine.getState()?.phase === 'IDLE' || gameEngine.getState()?.phase === 'GAME_OVER'}
+            style={{ marginRight: '8px' }}
+          >
+            Cancel
+          </button>
+          <button className="end-turn-btn" onClick={() => gameEngine.endTurn()}>
+            End Turn
+          </button>
+        </div>
       </div>
       <HoverInfoPanel state={gameState} hoveredTile={hoveredTile} />
       <CombatPreviewPanel state={gameState} hoveredTile={hoveredTile} />
