@@ -370,11 +370,21 @@ function ActionPanel({
 // Check move capability - has not moved, has supply
   const canMove = !unit.hasMoved && unit.supply > 0;
 
-  // Check attack capability - prefer special if has ammo
-  const weapon = def.weapons.special && unit.ammo > 0 ? def.weapons.special : def.weapons.auxiliary;
-  const validTargets = getValidTargets(unit, weapon, unit.position, state);
-  const fireAfterMove = def.weapons.special && unit.ammo > 0 ? def.weapons.special.fire_after_move : def.weapons.auxiliary.fire_after_move;
-  const canAttack = validTargets.length > 0 && !unit.hasActed && (!unit.hasMoved || fireAfterMove);
+  // Check attack capability
+  // After move, must check from the NEW position (unit.position is already updated in state)
+  // Use both weapons to check if ANY targets exist from the current position
+  const auxiliaryWeapon = def.weapons.auxiliary;
+  const specialWeapon = def.weapons.special && unit.ammo > 0 ? def.weapons.special : null;
+  
+  // Get targets for both weapons combined (from current position)
+  const defState = gameEngine.getState();
+  const validAuxTargets = auxiliaryWeapon ? getValidTargets(unit, auxiliaryWeapon, unit.position, defState || state) : [];
+  const validSpecialTargets = specialWeapon ? getValidTargets(unit, specialWeapon, unit.position, defState || state) : [];
+  const hasAnyTargets = validAuxTargets.length > 0 || validSpecialTargets.length > 0;
+  
+  // Check fire-after-move: if moved, only auxiliary can fire (check auxiliary.fire_after_move)
+  const fireAfterMove = unit.hasMoved ? (auxiliaryWeapon?.fire_after_move ?? false) : true;
+  const canAttack = hasAnyTargets && !unit.hasActed && (!unit.hasMoved || fireAfterMove);
   const canCapture = gameEngine.canCapture();
 
   const unitScreenX = unit.position.x * TILE_SIZE + TILE_SIZE / 2;
