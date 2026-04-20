@@ -4,8 +4,8 @@
   "description": "GrimWars: Dark Future - A turn-based tactical strategy game",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
+    "dev": "node scripts/copy-data.cjs && vite",
+    "build": "tsc && node scripts/copy-data.cjs && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit"
   },
