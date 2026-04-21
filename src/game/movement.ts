@@ -57,7 +57,7 @@ export function findPath(
 
   const moveType = definition.movement.type;
   const maxCost = definition.movement.points;
-  const isFly = moveType === 'fly';
+  const isFly = moveType === 'fly' || moveType === 'hover';
 
   const openSet: PathNode[] = [];
   const closedSet = new Set<string>();
@@ -169,7 +169,7 @@ export function getReachableTiles(
 
   const moveType = definition.movement.type;
   const maxCost = definition.movement.points;
-  const isFly = moveType === 'fly';
+  const isFly = moveType === 'fly' || moveType === 'hover';
 
   const reachable: Position[] = [];
   const visited = new Map<string, number>();
@@ -248,20 +248,20 @@ export function getAdjacentBlockedTiles(
 ): Position[] {
   const definition = unitRegistry.get(unit.definitionId);
   if (!definition) return [];
-  
+
   const moveType = definition.movement.type;
   const maxCost = definition.movement.points;
-  
+
   const reachableSet = new Set(reachableTiles.map(positionKey));
   const reachableCosts = new Map<string, number>();
-  
+
   for (const tile of reachableTiles) {
     const cost = getMovementCostTo(unit, tile, gameState);
     if (cost !== null) {
       reachableCosts.set(positionKey(tile), cost);
     }
   }
-  
+
   const blocked: Position[] = [];
   const blockedSet = new Set<string>();
 
@@ -278,17 +278,17 @@ export function getAdjacentBlockedTiles(
     for (const neighbor of neighbors) {
       const key = positionKey(neighbor);
       if (blockedSet.has(key) || reachableSet.has(key)) continue;
-      if (neighbor.x < 0 || neighbor.y < 0 || 
-          neighbor.x >= gameState.map[0].length || 
-          neighbor.y >= gameState.map.length) continue;
+      if (neighbor.x < 0 || neighbor.y < 0 ||
+        neighbor.x >= gameState.map[0].length ||
+        neighbor.y >= gameState.map.length) continue;
 
       const content = gameState.map[neighbor.y][neighbor.x].content;
-      
+
       if (content.type === 'unit' || content.type === 'building') {
         const neighborTerrain = gameState.map[neighbor.y][neighbor.x].terrainId;
         const neighborCost = getMovementCost(neighborTerrain, moveType);
         if (neighborCost === null) continue;
-        
+
         let totalCost: number;
         if (tile === unit.position) {
           totalCost = neighborCost;
@@ -296,7 +296,7 @@ export function getAdjacentBlockedTiles(
           const tileCost = reachableCosts.get(positionKey(tile)) ?? maxCost + 1;
           totalCost = tileCost + neighborCost;
         }
-        
+
         if (totalCost <= maxCost) {
           blocked.push(neighbor);
           blockedSet.add(key);
