@@ -57,7 +57,7 @@ export function findPath(
 
   const moveType = definition.movement.type;
   const maxCost = definition.movement.points;
-  const isFly = moveType === 'fly' || moveType === 'hover';
+  const isAerial = moveType === 'fly' || moveType === 'hover';
 
   const openSet: PathNode[] = [];
   const closedSet = new Set<string>();
@@ -113,7 +113,7 @@ export function findPath(
 
       // Fly units can pass through any unit (they fly over)
       // Non-fly units are blocked by enemy units unless targeting them
-      if (!isFly && tile.content.type === 'unit' && tile.content.unitId !== movingUnit.instanceId) {
+      if (!isAerial && tile.content.type === 'unit' && tile.content.unitId !== movingUnit.instanceId) {
         const blockingUnit = gameState.units.get(tile.content.unitId);
         if (blockingUnit && blockingUnit.owner !== movingUnit.owner) {
           // Can path through enemy to reach destination, but can't land on them
@@ -169,7 +169,7 @@ export function getReachableTiles(
 
   const moveType = definition.movement.type;
   const maxCost = definition.movement.points;
-  const isFly = moveType === 'fly' || moveType === 'hover';
+  const isAerial = moveType === 'fly' || moveType === 'hover';
 
   const reachable: Position[] = [];
   const visited = new Map<string, number>();
@@ -213,12 +213,12 @@ export function getReachableTiles(
 
       // Fly units can pass through units but cannot land on them
       // Non-fly units cannot pass through enemy units at all
-      if (!isFly && tile.content.type === 'unit' && tile.content.unitId !== unit.instanceId) {
+      if (!isAerial && tile.content.type === 'unit' && tile.content.unitId !== unit.instanceId) {
         continue;
       }
 
       // Don't pass through buildings (fly/hover units can fly over)
-      if (tile.content.type === 'building' && !isFly) {
+      if (tile.content.type === 'building' && !isAerial) {
         continue;
       }
 
