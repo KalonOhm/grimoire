@@ -25,10 +25,9 @@ export type MovementType =
   | 'foot'       // Standard foot movement
   | 'tread'      // Tanks, heavy vehicles
   | 'tire'       // Wheeled vehicles
-  | 'fly'        // Aircraft (high altitude)
+  | 'fly'        // Aircraft (high altitude, can hover, fuel consumption)
   | 'hover'      // Jump packs, jetbikes, repulsorlift
   | 'mech'       // Walkers (slow, steady, terrain ignore)
-  | 'air'        // Aircraft (consumes daily fuel, destroyed if 0)
   | 'naval'      // Sea units (future)
   | 'mount';     // Mounted cavalry (future)
 
