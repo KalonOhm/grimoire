@@ -22,13 +22,14 @@ export interface Position {
 // Movement type determines how a unit interacts with terrain costs.
 // Each type has different movement costs for each terrain type.
 export type MovementType =
-  | 'infantry'   // Standard foot movement
+  | 'foot'       // Standard foot movement
   | 'tread'      // Tanks, heavy vehicles
   | 'tire'       // Wheeled vehicles
-  | 'fly'        // Jump packs, assault infantry
+  | 'fly'        // Aircraft (high altitude)
+  | 'hover'      // Jump packs, jetbikes, repulsorlift
   | 'air'        // Aircraft (consumes daily fuel, destroyed if 0)
   | 'naval'      // Sea units (future)
-  | 'mount';     // Mounted cavalry (future)      // Mounted cavalry (future)
+  | 'mount';     // Mounted cavalry (future)
 
 // ============================================================================
 // ARMOR CLASS SYSTEM

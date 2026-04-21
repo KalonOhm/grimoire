@@ -13,7 +13,7 @@
     "armor": "heavy_infantry",
     "movement": {
       "points": 3,
-      "type": "infantry"
+      "type": "foot"
     },
     "vision": 2,
     "supply": 99,
@@ -267,7 +267,7 @@
     "armor": "light_infantry",
     "movement": {
       "points": 4,
-      "type": "infantry"
+      "type": "foot"
     },
     "vision": 3,
     "supply": 99,

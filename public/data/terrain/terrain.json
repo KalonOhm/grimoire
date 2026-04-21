@@ -4,7 +4,7 @@
     "name": "Plains",
     "defense": 10,
     "movement_cost": {
-      "infantry": 1,
+      "foot": 1,
       "tread": 1,
       "tire": 1,
       "fly": 1,
@@ -21,7 +21,7 @@
     "name": "Forest",
     "defense": 20,
     "movement_cost": {
-      "infantry": 1,
+      "foot": 1,
       "tread": 2,
       "tire": 2,
       "fly": 1,
@@ -38,7 +38,7 @@
     "name": "Mountain",
     "defense": 40,
     "movement_cost": {
-      "infantry": 2,
+      "foot": 2,
       "tread": -1,
       "tire": -1,
       "fly": 1,
@@ -55,7 +55,7 @@
     "name": "Road",
     "defense": 0,
     "movement_cost": {
-      "infantry": 1,
+      "foot": 1,
       "tread": 1,
       "tire": 1,
       "fly": 1,
@@ -72,7 +72,7 @@
     "name": "River",
     "defense": 5,
     "movement_cost": {
-      "infantry": 2,
+      "foot": 2,
       "tread": -1,
       "tire": -1,
       "fly": 1,
@@ -89,7 +89,7 @@
     "name": "Bridge",
     "defense": 0,
     "movement_cost": {
-      "infantry": 1,
+      "foot": 1,
       "tread": 1,
       "tire": 1,
       "fly": 1,
@@ -106,7 +106,7 @@
     "name": "Ruins",
     "defense": 30,
     "movement_cost": {
-      "infantry": 1,
+      "foot": 1,
       "tread": 1,
       "tire": 1,
       "fly": 1,
@@ -123,7 +123,7 @@
     "name": "Water",
     "defense": 0,
     "movement_cost": {
-      "infantry": -1,
+      "foot": -1,
       "tread": -1,
       "tire": -1,
       "fly": 1,
@@ -140,7 +140,7 @@
     "name": "Impassable",
     "defense": 0,
     "movement_cost": {
-      "infantry": -1,
+      "foot": -1,
       "tread": -1,
       "tire": -1,
       "fly": -1,
