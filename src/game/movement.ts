@@ -185,9 +185,9 @@ export function getReachableTiles(
     const current = queue.shift()!;
 
     if (current.cost > 0) {
-      // Fly units can land on buildings, others cannot land on occupied tiles
+      // Only empty tiles are valid destinations (buildings block movement)
       const currentTile = gameState.map[current.pos.y][current.pos.x];
-      if (currentTile.content.type === 'empty' || (isFly && currentTile.content.type === 'building')) {
+      if (currentTile.content.type === 'empty') {
         reachable.push(current.pos);
       }
     }
@@ -217,7 +217,7 @@ export function getReachableTiles(
         continue;
       }
 
-      // Don't pass through buildings (fly units can fly over)
+      // Don't pass through buildings (fly/hover units can fly over)
       if (tile.content.type === 'building' && !isFly) {
         continue;
       }
