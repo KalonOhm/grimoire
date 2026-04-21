@@ -1,4 +1,3 @@
-import React from 'react';
 import { usePhase, useActivePlayer, useCurrentTurn, useResources, useWinner } from './useGameEvent';
 import { gameEngine } from '../game/engine';
 import './GameUI.css';

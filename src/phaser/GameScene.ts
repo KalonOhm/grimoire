@@ -213,16 +213,20 @@ export class GameScene extends Phaser.Scene {
     this.unsubscribeFunctions.push(
       eventBus.on('BUILDING_SELECTED', () => {
         this.state = gameEngine.getState();
-        this.renderBuildings(this.state);
-        this.renderOverlays();
+        if (this.state) {
+          this.renderBuildings(this.state);
+          this.renderOverlays();
+        }
       })
     );
 
     this.unsubscribeFunctions.push(
       eventBus.on('BUILDING_DESELECTED', () => {
         this.state = gameEngine.getState();
-        this.renderBuildings(this.state);
-        this.renderOverlays();
+        if (this.state) {
+          this.renderBuildings(this.state);
+          this.renderOverlays();
+        }
       })
     );
 

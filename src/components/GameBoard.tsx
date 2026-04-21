@@ -181,27 +181,6 @@ export function GameBoard({ state, onStateChange, onTileHover, onTileLeave }: Ga
     onStateChange?.();
   }, [onStateChange]);
 
-  const handleCancel = useCallback(() => {
-    const freshState = gameEngine.getState();
-    switch (freshState?.phase) {
-      case 'UNIT_SELECTED':
-      case 'UNIT_MOVED':
-        gameEngine.deselectUnit();
-        break;
-      case 'ACTION_PREVIEW_MOVE':
-        gameEngine.hideMovePreview();
-        break;
-      case 'ACTION_PREVIEW_ATTACK_FROM_CURRENT':
-      case 'ACTION_PREVIEW_ATTACK_AFTER_MOVE':
-        gameEngine.hideAttackPreview();
-        break;
-      case 'BUILDING_SELECTED':
-        gameEngine.deselectBuilding();
-        break;
-    }
-    onStateChange?.();
-  }, [onStateChange]);
-
   const handleTileEnter = useCallback((x: number, y: number) => {
     onTileHover?.({ x, y });
   }, [onTileHover]);

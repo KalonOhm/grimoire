@@ -4,7 +4,7 @@ import { GameBoard } from './components/GameBoard';
 import { HoverInfoPanel } from './components/HoverInfoPanel';
 import { CombatPreviewPanel } from './components/CombatPreviewPanel';
 import { gameEngine } from './game/engine';
-import { eventBus } from './game/events';
+import { eventBus, EventName } from './game/events';
 import { loadAllData } from './game/loader';
 import { mapRegistry } from './game/registry';
 import './App.css';
@@ -67,7 +67,7 @@ export function App() {
   useEffect(() => {
     if (!gameState) return;
 
-    const events = [
+    const events: EventName[] = [
       'PHASE_CHANGE',
       'UNIT_SELECTED',
       'UNIT_DESELECTED',
