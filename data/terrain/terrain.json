@@ -9,6 +9,7 @@
       "tire": 1,
       "fly": 1,
       "hover": 1,
+      "mech": 1,
       "air": 1,
       "naval": -1,
       "mount": 1
@@ -27,6 +28,7 @@
       "tire": 2,
       "fly": 1,
       "hover": 1,
+      "mech": 1,
       "air": 1,
       "naval": -1,
       "mount": 2
@@ -45,6 +47,7 @@
       "tire": -1,
       "fly": 1,
       "hover": 1,
+      "mech": 1,
       "air": 1,
       "naval": -1,
       "mount": 2
@@ -63,6 +66,7 @@
       "tire": 1,
       "fly": 1,
       "hover": 1,
+      "mech": 1,
       "air": 1,
       "naval": -1,
       "mount": 1
@@ -81,6 +85,7 @@
       "tire": -1,
       "fly": 1,
       "hover": 1,
+      "mech": 1,
       "air": 1,
       "naval": 1,
       "mount": -1
@@ -99,6 +104,7 @@
       "tire": 1,
       "fly": 1,
       "hover": 1,
+      "mech": 1,
       "air": 1,
       "naval": -1,
       "mount": 1
@@ -117,6 +123,7 @@
       "tire": 1,
       "fly": 1,
       "hover": 1,
+      "mech": 1,
       "air": 1,
       "naval": -1,
       "mount": 1
@@ -135,6 +142,7 @@
       "tire": -1,
       "fly": 1,
       "hover": 1,
+      "mech": 1,
       "air": 1,
       "naval": 1,
       "mount": -1
@@ -153,6 +161,7 @@
       "tire": -1,
       "fly": -1,
       "hover": -1,
+      "mech": -1,
       "air": -1,
       "naval": -1,
       "mount": -1

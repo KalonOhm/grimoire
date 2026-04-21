@@ -27,6 +27,7 @@ export type MovementType =
   | 'tire'       // Wheeled vehicles
   | 'fly'        // Aircraft (high altitude)
   | 'hover'      // Jump packs, jetbikes, repulsorlift
+  | 'mech'       // Walkers (slow, steady, terrain ignore)
   | 'air'        // Aircraft (consumes daily fuel, destroyed if 0)
   | 'naval'      // Sea units (future)
   | 'mount';     // Mounted cavalry (future)
