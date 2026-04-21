@@ -74,7 +74,7 @@
     "armor": "heavy_infantry",
     "movement": {
       "points": 4,
-      "type": "fly"
+      "type": "hover"
     },
     "vision": 2,
     "supply": 60,
