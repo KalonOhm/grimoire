@@ -249,7 +249,7 @@ class GameEngine {
 
         // Daily supply consumption for air units
         const definition = unitRegistry.get(unit.definitionId);
-        if (definition && definition.movement.type === 'air') {
+        if (definition && definition.movement.type === 'fly') {
           const DAILY_AIR_SUPPLY = 2;
           unit.supply -= DAILY_AIR_SUPPLY;
           if (unit.supply <= 0) {

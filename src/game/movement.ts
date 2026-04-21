@@ -1,4 +1,4 @@
-import { Position, Unit, MovementType, GameState } from './types';
+import { Position, Unit, MovementType, UnitCategory, GameState } from './types';
 import { terrainRegistry, unitRegistry } from './registry';
 
 interface PathNode {
@@ -34,6 +34,26 @@ function positionKey(pos: Position): string {
   return `${pos.x},${pos.y}`;
 }
 
+function canPassThrough(moverCategory: UnitCategory, targetCategory: UnitCategory): boolean {
+  if (targetCategory === 'aircraft') {
+    return false;
+  }
+  
+  if (moverCategory === 'aircraft') {
+    return true;
+  }
+  
+  if (moverCategory === 'infantry' || moverCategory === 'mounted') {
+    return true;
+  }
+  
+  if (moverCategory === 'vehicle' || moverCategory === 'monster') {
+    return targetCategory !== 'vehicle' && targetCategory !== 'monster';
+  }
+  
+  return false;
+}
+
 function getMovementCost(terrainId: string, moveType: MovementType): number | null {
   const terrain = terrainRegistry.get(terrainId);
   if (!terrain) return null;
@@ -58,6 +78,7 @@ export function findPath(
   const moveType = definition.movement.type;
   const maxCost = definition.movement.points;
   const isAerial = moveType === 'fly' || moveType === 'hover';
+  const moverCategory = definition.category;
 
   const openSet: PathNode[] = [];
   const closedSet = new Set<string>();
@@ -111,19 +132,21 @@ export function findPath(
 
       const tile = gameState.map[neighbor.y][neighbor.x];
 
-      // Fly units can pass through any unit (they fly over)
-      // Non-fly units are blocked by enemy units unless targeting them
       if (!isAerial && tile.content.type === 'unit' && tile.content.unitId !== movingUnit.instanceId) {
         const blockingUnit = gameState.units.get(tile.content.unitId);
-        if (blockingUnit && blockingUnit.owner !== movingUnit.owner) {
-          // Can path through enemy to reach destination, but can't land on them
-          if (neighbor.x !== to.x || neighbor.y !== to.y) {
+        if (blockingUnit) {
+          const targetDef = unitRegistry.get(blockingUnit.definitionId);
+          const targetCategory = targetDef?.category || 'infantry';
+          
+          if (!canPassThrough(moverCategory, targetCategory)) {
             continue;
           }
-        }
-        // Friendly units always block (can't land on them)
-        if (blockingUnit && blockingUnit.owner === movingUnit.owner) {
-          continue;
+          
+          if (blockingUnit.owner !== movingUnit.owner) {
+            if (neighbor.x !== to.x || neighbor.y !== to.y) {
+              continue;
+            }
+          }
         }
       }
 
@@ -170,6 +193,7 @@ export function getReachableTiles(
   const moveType = definition.movement.type;
   const maxCost = definition.movement.points;
   const isAerial = moveType === 'fly' || moveType === 'hover';
+  const moverCategory = definition.category;
 
   const reachable: Position[] = [];
   const visited = new Map<string, number>();
@@ -211,10 +235,15 @@ export function getReachableTiles(
 
       const tile = gameState.map[neighbor.y][neighbor.x];
 
-      // Fly units can pass through units but cannot land on them
-      // Non-fly units cannot pass through enemy units at all
       if (!isAerial && tile.content.type === 'unit' && tile.content.unitId !== unit.instanceId) {
-        continue;
+        const blockingUnit = gameState.units.get(tile.content.unitId);
+        if (blockingUnit) {
+          const targetDef = unitRegistry.get(blockingUnit.definitionId);
+          const targetCategory = targetDef?.category || 'infantry';
+          if (!canPassThrough(moverCategory, targetCategory)) {
+            continue;
+          }
+        }
       }
 
       // Don't pass through buildings (fly/hover units can fly over)

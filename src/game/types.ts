@@ -52,8 +52,13 @@ export type ArmorClass =
 // UNIT TYPES
 // ============================================================================
 
-// Category is primarily for organization and rendering hints
-export type UnitCategory = 'infantry' | 'vehicle' | 'aircraft';
+// Category determines movement blocking rules and visuals
+// - infantry: Can pass through friendlies, enter ruins
+// - mounted: Can pass through friendlies, enter ruins (cavalry, bikes, jetbikes)
+// - vehicle: Blocked by vehicles/monsters, cannot enter ruins
+// - monster: Blocked by vehicles/monsters, cannot enter ruins
+// - aircraft: Pass over all except enemy aircraft
+export type UnitCategory = 'infantry' | 'mounted' | 'vehicle' | 'monster' | 'aircraft';
 
 // Combat model determines how damage affects unit effectiveness
 // - 'linear': Effectiveness scales with HP fraction (infantry squads)
