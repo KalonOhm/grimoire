@@ -34,7 +34,7 @@ function positionKey(pos: Position): string {
   return `${pos.x},${pos.y}`;
 }
 
-function canPassThrough(moverCategory: UnitCategory, targetCategory: UnitCategory): boolean {
+function canPassThrough(moverCategory: UnitCategory, moverMoveType: MovementType, targetCategory: UnitCategory, isFriendly: boolean): boolean {
   if (targetCategory === 'aircraft') {
     return false;
   }
@@ -43,7 +43,17 @@ function canPassThrough(moverCategory: UnitCategory, targetCategory: UnitCategor
     return true;
   }
   
-  if (moverCategory === 'infantry' || moverCategory === 'mounted') {
+  if (isFriendly) {
+    if (moverCategory === 'infantry' || moverCategory === 'mounted') {
+      return true;
+    }
+    if (moverCategory === 'vehicle' || moverCategory === 'monster') {
+      return targetCategory !== 'vehicle' && targetCategory !== 'monster';
+    }
+    return true;
+  }
+  
+  if (moverMoveType === 'hover') {
     return true;
   }
   
@@ -137,12 +147,13 @@ export function findPath(
         if (blockingUnit) {
           const targetDef = unitRegistry.get(blockingUnit.definitionId);
           const targetCategory = targetDef?.category || 'infantry';
+          const isFriendly = blockingUnit.owner === movingUnit.owner;
           
-          if (!canPassThrough(moverCategory, targetCategory)) {
+          if (!canPassThrough(moverCategory, moveType, targetCategory, isFriendly)) {
             continue;
           }
           
-          if (blockingUnit.owner !== movingUnit.owner) {
+          if (!isFriendly) {
             if (neighbor.x !== to.x || neighbor.y !== to.y) {
               continue;
             }
@@ -240,7 +251,8 @@ export function getReachableTiles(
         if (blockingUnit) {
           const targetDef = unitRegistry.get(blockingUnit.definitionId);
           const targetCategory = targetDef?.category || 'infantry';
-          if (!canPassThrough(moverCategory, targetCategory)) {
+          const isFriendly = blockingUnit.owner === unit.owner;
+          if (!canPassThrough(moverCategory, moveType, targetCategory, isFriendly)) {
             continue;
           }
         }

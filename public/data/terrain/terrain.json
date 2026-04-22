@@ -12,7 +12,6 @@
       "mech": 1,
       "naval": -1,
       "mount": 1
-      "mount": 1
     },
     "blocks_movement": false,
     "can_capture": false,
@@ -30,7 +29,6 @@
       "hover": 1,
       "mech": 1,
       "naval": -1,
-      "mount": 1
       "mount": 2
     },
     "blocks_movement": false,
@@ -49,7 +47,6 @@
       "hover": 1,
       "mech": 1,
       "naval": -1,
-      "mount": 1
       "mount": 2
     },
     "blocks_movement": false,
@@ -68,7 +65,6 @@
       "hover": 1,
       "mech": 1,
       "naval": -1,
-      "mount": 1
       "mount": 1
     },
     "blocks_movement": false,
@@ -107,7 +103,6 @@
       "mech": 1,
       "naval": -1,
       "mount": 1
-      "mount": 1
     },
     "blocks_movement": false,
     "can_capture": false,
@@ -119,14 +114,13 @@
     "defense": 30,
     "movement_cost": {
       "foot": 1,
-      "tread": 1,
-      "tire": 1,
+      "tread": -1,
+      "tire": -1,
       "fly": 1,
       "hover": 1,
       "mech": 1,
       "naval": -1,
-      "mount": 1
-      "mount": 1
+      "mount": -1
     },
     "blocks_movement": false,
     "can_capture": false,
