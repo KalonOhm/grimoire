@@ -80,10 +80,8 @@ data/
 ## Deferred Features
 
 ### Core Gameplay
-- Building capture progress (infantry adjacent to neutral building)
 - Building attack (enemy building retaliates)
 - Building repair (restore friendly building HP)
-- Building income system (resource buildings grant income per turn)
 - Unit production from factories
 
 ### Units & Logistics
@@ -91,7 +89,6 @@ data/
 - Supply/resupply mechanics
 - Transport units (load/unload)
 - Unit merging
-- Movement preview highlighting (grey out occupied tiles)
 
 ### AI & Opponents
 - AI opponents
@@ -145,7 +142,7 @@ interface UnitDefinition {
   id: string;
   name: string;
   faction: string;
-  category: 'infantry' | 'vehicle' | 'aircraft';
+  category: 'infantry' | 'mounted' | 'vehicle' | 'monster' | 'aircraft';
   cost: number;
   roster: { model_count: number; hp_per_model: number };
   combat_model: 'linear' | 'stepped';
@@ -181,9 +178,13 @@ interface UnitDefinition {
 
 - A* pathfinding with movement cost accounting
 - Per-unit movement points and per-terrain costs
-- Ground units cannot move through enemy units
-- Air units may move over ground units
-- Enemy air units block hostile airspace
+- Movement types: foot, tread, tire, fly, hover, mech, naval, mount
+- Categories: infantry, mounted, vehicle, monster, aircraft
+- Ground units can pass through friendly units (infantry, mounted)
+- Hover units can path through enemies
+- Vehicle/monster cannot pass through each other
+- Aircraft may move over all except enemy aircraft
+- Fly/hover can fly over buildings
 
 ## MVP Features (Completed)
 
@@ -193,6 +194,10 @@ interface UnitDefinition {
 4. Combat between units with damage calculation
 5. Turn-based player alternation
 6. Army elimination win condition
+7. HQ capture win condition
+8. Building capture (infantry)
+9. Building income system (resources per turn)
+10. Contest action (stop enemy capture)
 7. HQ capture win condition
 
 ## Current Implementation Status

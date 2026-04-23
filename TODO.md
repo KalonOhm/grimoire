@@ -9,38 +9,38 @@
 - [ ] add rhino as space marine transport 
 
 ## Building Fixes
-- [ ] Add income-producing building type. Mine or manufacturing building would make sense, but abstracted to any form of resource. Possible add 2, to track multiple resources. 
 - [ ] make 1 factory for each player already under their control. 
-- [ ] make 1 resource building under each player's control.
+- [ ] add unit production from factories
 - [ ] add additional neutral resource income buildings around the map.
 
 ## Movement & Action Menu
 - [x] Grey out occupied/invalid tiles in movement preview (buildings, other units)
 - [ ] Add keyboard/controller controls
 
-
 ## Keyboard Controls (Known Issue)
 - [ ] ~~consider controller controls, selection reticle that snaps to grid, buttons to select, buttons to cancel and to end turn~~
 
 ## Building Actions
-- [ ] Capture: Infantry adjacent to neutral building (instant, 1 action)
+- [x] Capture: Infantry adjacent to neutral building (instant, 1 action)
+- [x] Contest: Stop enemy capture of neutral/enemy building (10% damage to each enemy capturer, 5%×enemies to contestant)
 - [ ] Attack: Any unit adjacent to enemy building (building retaliates with light infantry damage)
 - [ ] Repair: Any unit adjacent to friendly building (restore to full HP)
-- [ ] repair and unit deploy subtracks from credits. 
-- [ ] Resource buildings - not an action, but gain income at start of player turn. 
+- [ ] repair and unit deploy subtracks from resources. 
 
 ## Faction System
 - [ ] Add faction/Strategem system (Warhammer 40k CO powers)
 
 ## Advanced Terrain
 - [ ] Passable-for-air terrain (fly OVER, can't land)
-- [ ] apply flyover to all buildings - this already appears to work for assault jump squad
+- [x] apply flyover to all buildings - works for assault jump squad (hover movement)
 
 ## AI & Systems
 - [ ] Add AI opponents
 - [ ] Add Fog of War
 - [ ] Add sound effects and animations
-- [ ] Add unit production from factories
 
 ## Known Issues (Pre-Fix List)
-- Verify combat calculations still work
+- [x] Verify combat calculations still work
+- [x] Whirlwind fire_after_move - fixed to check each weapon individually
+- [x] Whirlwind attack after move - only aux weapon targets shown
+- [x] Movement blocking - vehicle/monster block each other, infantry/mounted can pass through friendlies
