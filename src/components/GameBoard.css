@@ -14,6 +14,17 @@
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
 }
 
+.fog-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+  z-index: 1;
+}
+
 .tile {
   position: absolute;
   border: 1px solid rgba(51, 51, 51, 0.3);

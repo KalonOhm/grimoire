@@ -3,6 +3,7 @@ import { GameState, Position, Unit } from '../game/types';
 import { unitRegistry } from '../game/registry';
 import { gameEngine } from '../game/engine';
 import { getAllValidTargetsInRange } from '../game/combat';
+import { isUnitVisible } from '../game/vision';
 import './GameBoard.css';
 
 const TILE_SIZE = 64;
@@ -41,6 +42,7 @@ const PLAYER_COLORS = {
   1: { bg: '#4488ff', border: '#2266cc', text: '#ffffff', spent: '#88aacc', terrain: '#2a4a99' },
   2: { bg: '#ff4444', border: '#cc2222', text: '#ffffff', spent: '#cc8899', terrain: '#992222' },
   neutral: { bg: '#888888', border: '#666666', text: '#ffffff', spent: '#888888', terrain: '#555555' },
+  unknown: { bg: '#444444', border: '#333333', text: '#aaaaaa', spent: '#444444', terrain: '#444444' },
 };
 
 interface GameBoardProps {
@@ -55,9 +57,10 @@ interface BuildingTriangleProps {
   terrainId: string;
   buildings: Map<string, { id: string; owner: number | null; position: Position }>;
   gameState?: { units: Map<string, { instanceId: string; capturingBuildingId: string | null }> };
+  isFogged?: boolean;
 }
 
-function BuildingTriangle({ position, terrainId, buildings, gameState }: BuildingTriangleProps) {
+function BuildingTriangle({ position, terrainId, buildings, gameState, isFogged }: BuildingTriangleProps) {
   let buildingOwner: number | null = null;
   for (const building of buildings.values()) {
     if (building.position.x === position.x && building.position.y === position.y) {
@@ -66,9 +69,14 @@ function BuildingTriangle({ position, terrainId, buildings, gameState }: Buildin
     }
   }
 
-  const colors = buildingOwner !== null
+  let colors = buildingOwner !== null
     ? PLAYER_COLORS[buildingOwner as 1 | 2]
     : PLAYER_COLORS.neutral;
+
+  // Unknown state for fogged buildings (except HQ)
+  if (isFogged && terrainId !== 'hq') {
+    colors = PLAYER_COLORS.unknown;
+  }
 
   let size = 20;
   let marginTop = 4;
@@ -86,7 +94,7 @@ function BuildingTriangle({ position, terrainId, buildings, gameState }: Buildin
 
   return (
     <div
-      className={`building ${gameState?.units && Array.from(gameState.units.values()).some(u => u.capturingBuildingId === Array.from(buildings.values()).find(b => b.position.x === position.x && b.position.y === position.y)?.id) ? 'building-being-captured' : ''}`}
+      className={`building ${gameState?.units && Array.from(gameState.units.values()).some(u => u.capturingBuildingId === Array.from(buildings.values()).find(b => b.position.x === position.x && b.position.y === position.y)?.id) ? 'building-being-captured' : ''} ${isFogged ? 'fogged' : ''}`}
       style={{
         position: 'absolute',
         left: TILE_SIZE / 2,
@@ -100,6 +108,7 @@ function BuildingTriangle({ position, terrainId, buildings, gameState }: Buildin
         pointerEvents: 'none',
         zIndex: 1,
         marginTop: `${marginTop}px`,
+        filter: isFogged && terrainId === 'hq' ? 'brightness(0.5)' : 'none',
       }}
     >
       {gameState?.units && Array.from(gameState.units.values()).some(u => u.capturingBuildingId === Array.from(buildings.values()).find(b => b.position.x === position.x && b.position.y === position.y)?.id) && (
@@ -254,6 +263,7 @@ export function GameBoard({ state, onStateChange, onTileHover, onTileLeave }: Ga
             const isBuildingSelected = isSelectedBuilding(x, y);
             const isBlocked = isBlockedTile(x, y);
             const isBlockedEnemy = isBlockedByEnemy(x, y);
+            const isFogged = state.fogOfWar && !state.visibleTiles.has(`${x},${y}`);
 
             let tileClass = 'tile';
             if (isReachable) tileClass += ' tile-reachable';
@@ -277,12 +287,14 @@ export function GameBoard({ state, onStateChange, onTileHover, onTileLeave }: Ga
                 onMouseEnter={() => handleTileEnter(x, y)}
                 onMouseLeave={handleTileLeave}
               >
+                {isFogged && <div className="fog-overlay" />}
                 {getBuildingAtPosition(state.buildings, x, y) && (
                   <BuildingTriangle 
                     position={{ x, y }} 
                     terrainId={getBuildingAtPosition(state.buildings, x, y)?.buildingType || 'factory'}
                     buildings={state.buildings}
                     gameState={state}
+                    isFogged={isFogged}
                   />
                 )}
               </div>
@@ -291,6 +303,8 @@ export function GameBoard({ state, onStateChange, onTileHover, onTileLeave }: Ga
         )}
 
         {Array.from(state.units.values()).map(unit => {
+          if (!isUnitVisible(unit, state)) return null;
+
           const definition = unitRegistry.get(unit.definitionId);
           if (!definition) return null;
 

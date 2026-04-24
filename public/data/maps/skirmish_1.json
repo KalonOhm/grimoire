@@ -3,6 +3,7 @@
   "name": "The Crucible",
   "width": 16,
   "height": 12,
+  "fogOfWar": true,
   "terrain": [
     ["impassable", "impassable", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "impassable", "impassable"],
     ["impassable", "plains", "plains", "plains", "forest", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "forest", "plains", "impassable"],

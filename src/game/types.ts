@@ -169,7 +169,7 @@ export interface Unit {
 // Terrain ID used in map data
 export type TerrainId =
   | 'plains' | 'forest' | 'mountain' | 'road' | 'river' | 'bridge'
-  | 'ruins' | 'water' | 'impassable';
+  | 'ruins' | 'water' | 'impassable' | 'wasteland' | 'ash_wastes' | 'barrens' | 'stronghold';
 
 // Terrain type definition with all gameplay effects
 export interface TerrainType {
@@ -225,6 +225,7 @@ export interface MapData {
   name: string;
   width: number;
   height: number;
+  fogOfWar?: boolean; // Optional flag to enable Fog of War for this map
   
   // 2D array of terrain IDs
   // terrain[y][x] = terrain at position (x, y)
@@ -283,6 +284,10 @@ export interface GameState {
   // Turn management
   activePlayer: PlayerId;   // Whose turn it is
   currentTurn: number;      // Current turn number
+  
+  // Fog of War
+  fogOfWar: boolean;
+  visibleTiles: Set<string>; // Set of "x,y" keys that the active player can see
   
   // Player resources
   players: {

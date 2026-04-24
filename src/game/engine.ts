@@ -21,6 +21,7 @@ import { eventBus } from './events';
 import { unitRegistry, initializeArmorClasses } from './registry';
 import { getReachableTiles, getAdjacentBlockedTiles, findPath, getMovementCostTo, getAdjacentTiles } from './movement';
 import { calculateDamage, canRetaliate, getBestRetaliationWeapon, getBestWeaponForTarget, getAllValidTargetsInRange } from './combat';
+import { updateVision } from './vision';
 
 // ============================================================================
 // INSTANCE ID GENERATION
@@ -155,6 +156,8 @@ export function createInitialState(mapData: MapData): GameState {
     phase: 'BOOT',
     activePlayer: 1,     // Player 1 goes first
     currentTurn: 1,
+    fogOfWar: mapData.fogOfWar || false,
+    visibleTiles: new Set<string>(),
     players: {
       1: { resources: 0 },
       2: { resources: 0 },
@@ -188,6 +191,9 @@ class GameEngine {
     
     // Create the initial game state
     this.state = createInitialState(mapData);
+
+    // Initial vision update
+    updateVision(this.state);
     
     // Start the game by entering TURN_START phase
     this.setPhase('TURN_START');
@@ -339,6 +345,7 @@ class GameEngine {
     }
 
     // Emit events for UI updates
+    updateVision(this.state);
     eventBus.emit('INCOME_RECEIVED', { player, amount: income });
     eventBus.emit('TURN_START', { player, turn: this.state.currentTurn });
 
@@ -386,6 +393,7 @@ class GameEngine {
         if (building) {
           const oldOwner = building.owner;
           building.owner = opponent;
+          updateVision(this.state);
           eventBus.emit('BUILDING_CAPTURED', { 
             buildingId: building.id, 
             newOwner: opponent,
@@ -638,6 +646,9 @@ class GameEngine {
 
     // Mark as moved
     unit.hasMoved = true;
+
+    // Update vision after moving
+    updateVision(this.state);
 
     // Emit move event
     eventBus.emit('UNIT_MOVED', { unitId, from: oldPosition, to: destination });
@@ -1083,6 +1094,9 @@ class GameEngine {
 
     // Remove from units map
     this.state.units.delete(unitId);
+
+    // Update vision after a unit dies
+    updateVision(this.state);
 
     // Emit destruction event
     eventBus.emit('UNIT_DESTROYED', { unitId });

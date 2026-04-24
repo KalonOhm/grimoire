@@ -6,6 +6,7 @@
 
 import { Unit, Weapon, CombatResult, Position, ArmorClass, GameState } from './types';
 import { unitRegistry, terrainRegistry } from './registry';
+import { isUnitVisible } from './vision';
 
 // ============================================================================
 // UNIT EFFECTIVENESS CALCULATION
@@ -216,6 +217,9 @@ export function getValidTargets(
     // Skip own units
     if (unit.owner === attacker.owner) continue;
     
+    // Skip invisible units
+    if (!isUnitVisible(unit, gameState)) continue;
+
     // Check if can target this armor class
     if (!canTarget(attacker, unit, weapon, gameState)) continue;
     
