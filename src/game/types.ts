@@ -228,7 +228,6 @@ export interface MapData {
   fogOfWar?: boolean; // Optional flag to enable Fog of War for this map
   
   // 2D array of terrain IDs
-  // terrain[y][x] = terrain at position (x, y)
   terrain: TerrainId[][];
   
   // Initial unit placements (before game starts)

@@ -47,7 +47,7 @@ export function updateVision(state: GameState): void {
       let vision = def.vision;
       
       // Bonus vision on mountains for foot and mech units
-      if (def && (def.movement.type === 'foot' || def.movement.type === 'mech')) {
+      if (def.movement.type === 'foot' || def.movement.type === 'mech') {
         const currentTile = state.map[unit.position.y]?.[unit.position.x];
         if (currentTile && currentTile.terrainId === 'mountain') {
           vision += 3;

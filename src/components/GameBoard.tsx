@@ -262,7 +262,7 @@ export function GameBoard({ state, onStateChange, onTileHover, onTileLeave }: Ga
             const isUnitSelected = isSelectedUnit(x, y);
             const isBuildingSelected = isSelectedBuilding(x, y);
             const isBlocked = isBlockedTile(x, y);
-            const isBlockedEnemy = isBlockedByEnemy(x, y);
+const isBlockedEnemy = isBlockedByEnemy(x, y);
             const isFogged = state.fogOfWar && !state.visibleTiles.has(`${x},${y}`);
 
             let tileClass = 'tile';
