@@ -22,14 +22,14 @@
     "name": "Forest",
     "defense": 20,
     "movement_cost": {
-      "foot": 1,
-      "tread": 2,
-      "tire": 3,
+      "foot": 2,
+      "tread": 3,
+      "tire": 4,
       "fly": 1,
       "hover": 1,
       "mech": 1,
       "naval": -1,
-      "mount": 2
+      "mount": 3
     },
     "blocks_movement": false,
     "can_capture": false,
@@ -40,14 +40,14 @@
     "name": "Mountain",
     "defense": 40,
     "movement_cost": {
-      "foot": 2,
+      "foot": 3,
       "tread": -1,
       "tire": -1,
       "fly": 1,
       "hover": 1,
       "mech": 1,
       "naval": -1,
-      "mount": 2
+      "mount": -1
     },
     "blocks_movement": false,
     "can_capture": false,
@@ -74,7 +74,7 @@
   {
     "id": "river",
     "name": "River",
-    "defense": 5,
+    "defense": -20,
     "movement_cost": {
       "foot": 2,
       "tread": -1,
@@ -83,7 +83,7 @@
       "hover": 1,
       "mech": 1,
       "naval": 1,
-      "mount": -1
+      "mount": 4
     },
     "blocks_movement": false,
     "can_capture": false,
@@ -114,7 +114,7 @@
     "movement_cost": {
       "foot": 1,
       "tread": -1,
-      "tire": 2,
+      "tire": -1,
       "fly": 1,
       "hover": 1,
       "mech": 1,
@@ -166,14 +166,14 @@
     "name": "Wasteland",
     "defense": 20,
     "movement_cost": {
-      "foot": 1,
-      "tread": 2,
-      "tire": 3,
+      "foot": 2,
+      "tread": 3,
+      "tire": 4,
       "fly": 1,
       "hover": 1,
       "mech": 1,
       "naval": -1,
-      "mount": 2
+      "mount": 3
     },
     "blocks_movement": false,
     "can_capture": false,
