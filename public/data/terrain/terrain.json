@@ -6,7 +6,7 @@
     "movement_cost": {
       "foot": 1,
       "tread": 1,
-      "tire": 1,
+      "tire": 2,
       "fly": 1,
       "hover": 1,
       "mech": 1,
@@ -24,7 +24,7 @@
     "movement_cost": {
       "foot": 1,
       "tread": 2,
-      "tire": 2,
+      "tire": 3,
       "fly": 1,
       "hover": 1,
       "mech": 1,
@@ -82,7 +82,6 @@
       "fly": 1,
       "hover": 1,
       "mech": 1,
-      "air": 1,
       "naval": 1,
       "mount": -1
     },
@@ -115,7 +114,7 @@
     "movement_cost": {
       "foot": 1,
       "tread": -1,
-      "tire": -1,
+      "tire": 2,
       "fly": 1,
       "hover": 1,
       "mech": 1,
@@ -127,7 +126,7 @@
     "income_per_turn": 0
   },
   {
-"id": "water",
+    "id": "water",
     "name": "Water",
     "defense": 0,
     "movement_cost": {
@@ -137,7 +136,6 @@
       "fly": 1,
       "hover": 1,
       "mech": 1,
-      "air": 1,
       "naval": 1,
       "mount": -1
     },
@@ -160,6 +158,60 @@
       "mount": -1
     },
     "blocks_movement": true,
+    "can_capture": false,
+    "income_per_turn": 0
+  },
+  {
+    "id": "wasteland",
+    "name": "Wasteland",
+    "defense": 20,
+    "movement_cost": {
+      "foot": 1,
+      "tread": 2,
+      "tire": 3,
+      "fly": 1,
+      "hover": 1,
+      "mech": 1,
+      "naval": -1,
+      "mount": 2
+    },
+    "blocks_movement": false,
+    "can_capture": false,
+    "income_per_turn": 0
+  },
+  {
+    "id": "ash_wastes",
+    "name": "Ash Wastes",
+    "defense": 10,
+    "movement_cost": {
+      "foot": 1,
+      "tread": 1,
+      "tire": 2,
+      "fly": 1,
+      "hover": 1,
+      "mech": 1,
+      "naval": -1,
+      "mount": 1
+    },
+    "blocks_movement": false,
+    "can_capture": false,
+    "income_per_turn": 0
+  },
+  {
+    "id": "stronghold",
+    "name": "Stronghold",
+    "defense": 40,
+    "movement_cost": {
+      "foot": 1,
+      "tread": 1,
+      "tire": 1,
+      "fly": 1,
+      "hover": 1,
+      "mech": 1,
+      "naval": -1,
+      "mount": 1
+    },
+    "blocks_movement": false,
     "can_capture": false,
     "income_per_turn": 0
   }
