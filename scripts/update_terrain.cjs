@@ -25,11 +25,11 @@ wasteland.id = 'wasteland';
 wasteland.name = 'Wasteland';
 terrainData.push(wasteland);
 
-// 5. Add Ash Wastes (clone of updated Plains)
-const ashWastes = JSON.parse(JSON.stringify(plains));
-ashWastes.id = 'ash_wastes';
-ashWastes.name = 'Ash Wastes';
-terrainData.push(ashWastes);
+// 5. Add Barrens (clone of updated Plains)
+const barrens = JSON.parse(JSON.stringify(plains));
+barrens.id = 'barrens';
+barrens.name = 'Barrens';
+terrainData.push(barrens);
 
 // 6. Add Stronghold (40 def, 1 move cost for ground units)
 terrainData.push({

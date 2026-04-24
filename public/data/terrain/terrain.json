@@ -180,8 +180,8 @@
     "income_per_turn": 0
   },
   {
-    "id": "ash_wastes",
-    "name": "Ash Wastes",
+    "id": "barrens",
+    "name": "Barrens",
     "defense": 10,
     "movement_cost": {
       "foot": 1,
