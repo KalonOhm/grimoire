@@ -28,6 +28,7 @@ interface EventMap {
   GAME_OVER: { winner: PlayerId };
   RESOURCES_CHANGED: { player: PlayerId; resources: number };
   UNIT_CONTESTED: { unitId: string; buildingId: string; enemiesCount: number };
+  AMBUSHED: { unitId: string; position: Position };
   UI_ACTION_REQUESTED: { action: string; context: unknown };
   GAME_STATE_FULL_UPDATE: Record<string, unknown>;
 }

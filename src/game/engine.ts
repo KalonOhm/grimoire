@@ -21,7 +21,7 @@ import { eventBus } from './events';
 import { unitRegistry, initializeArmorClasses } from './registry';
 import { getReachableTiles, getAdjacentBlockedTiles, findPath, getMovementCostTo, getAdjacentTiles } from './movement';
 import { calculateDamage, canRetaliate, getBestRetaliationWeapon, getBestWeaponForTarget, getAllValidTargetsInRange } from './combat';
-import { updateVision } from './vision';
+import { updateVision, isUnitVisible } from './vision';
 
 // ============================================================================
 // INSTANCE ID GENERATION
@@ -609,6 +609,14 @@ class GameEngine {
     const unit = this.state.units.get(unitId);
     if (!unit) return;
 
+    // Get the path
+    let path = this.state.movePreview?.path || [];
+    if (path.length === 0) {
+      path = findPath(unit.position, destination, unit, this.state) || [];
+    }
+    
+    if (path.length === 0) return;
+
     const definition = unitRegistry.get(unit.definitionId);
     if (!definition) return;
 
@@ -616,30 +624,47 @@ class GameEngine {
     if (moveCost === null) return;
 
     // Check if unit has enough supply
-    if (unit.supply < moveCost) {
-      return;
-    }
-
-    // Check destination - cannot move onto building tiles (Wargroove-style: interact from adjacent)
-    const destContent = this.state.map[destination.y]?.[destination.x]?.content;
-    if (destContent?.type === 'building') {
-      this.hideMovePreview();
-      return;
-    }
+    if (unit.supply < moveCost) return;
 
     const oldPosition = { ...unit.position };
+    let currentPosition = { ...oldPosition };
+    let finalPosition = { ...oldPosition };
 
-    // Clear old position (units can't be on buildings, so no restoration needed)
+    // Move step-by-step
+    for (const step of path) {
+      const tile = this.state.map[step.y]?.[step.x];
+      
+      // Ambush check: if invisible enemy, stop at previous step
+      if (tile.content.type === 'unit') {
+        const unitOnTile = this.state.units.get(tile.content.unitId);
+        if (unitOnTile && unitOnTile.owner !== unit.owner && !isUnitVisible(unitOnTile, this.state)) {
+          // Trigger Ambush!
+          unit.hasActed = true;
+          eventBus.emit('AMBUSHED', { unitId, position: step });
+          break;
+        }
+      }
+
+      // If step is a building, don't land on it (Wargroove style)
+      if (tile.content.type === 'building') {
+        break;
+      }
+      
+      currentPosition = { ...step };
+      finalPosition = { ...step };
+    }
+
+    // Clear old position
     this.state.map[oldPosition.y][oldPosition.x].content = { type: 'empty' };
 
     // Consume supply for movement
     unit.supply -= moveCost;
 
     // Update unit position
-    unit.position = destination;
+    unit.position = finalPosition;
 
     // Set new position
-    this.state.map[destination.y][destination.x].content = {
+    this.state.map[finalPosition.y][finalPosition.x].content = {
       type: 'unit',
       unitId,
     };
@@ -651,14 +676,11 @@ class GameEngine {
     updateVision(this.state);
 
     // Emit move event
-    eventBus.emit('UNIT_MOVED', { unitId, from: oldPosition, to: destination });
+    eventBus.emit('UNIT_MOVED', { unitId, from: oldPosition, to: finalPosition });
 
     // Clear move preview
     this.state.movePreview = null;
 
-    // Always go to UNIT_MOVED after moving - show action menu
-    // Player chooses: Attack, Wait, or Cancel
-    // Don't auto-show attack targets - that's done via menu option instead
     this.setPhase('UNIT_MOVED');
   }
 
