@@ -90,6 +90,8 @@ export function findPath(
   const isAerial = moveType === 'fly' || moveType === 'hover';
   const moverCategory = definition.category;
 
+  console.log('findPath:', { from, to, moveType, maxCost, isAerial });
+
   const openSet: PathNode[] = [];
   const closedSet = new Set<string>();
 
@@ -150,15 +152,22 @@ export function findPath(
           const isFriendly = blockingUnit.owner === movingUnit.owner;
           
           if (!canPassThrough(moverCategory, moveType, targetCategory, isFriendly)) {
+            console.log('findPath blocking: canPassThrough false', { neighbor, targetCategory, isFriendly });
             continue;
           }
           
           if (!isFriendly) {
             if (neighbor.x !== to.x || neighbor.y !== to.y) {
+              console.log('findPath blocking: enemy not target', { neighbor, to });
               continue;
             }
           }
         }
+      }
+
+      // Don't pass through buildings (fly/hover units can fly over)
+      if (tile.content.type === 'building' && !isAerial) {
+        continue;
       }
 
       const cost = getMovementCost(tile.terrainId, moveType);
@@ -205,6 +214,8 @@ export function getReachableTiles(
   const maxCost = definition.movement.points;
   const isAerial = moveType === 'fly' || moveType === 'hover';
   const moverCategory = definition.category;
+
+  console.log('getReachableTiles:', { unitPos: unit.position, moveType, maxCost, isAerial });
 
   const reachable: Position[] = [];
   const visited = new Map<string, number>();
@@ -253,6 +264,7 @@ export function getReachableTiles(
           const targetCategory = targetDef?.category || 'infantry';
           const isFriendly = blockingUnit.owner === unit.owner;
           if (!canPassThrough(moverCategory, moveType, targetCategory, isFriendly)) {
+            console.log('getReachableTile blocking:', { neighbor, targetCategory, isFriendly });
             continue;
           }
         }

@@ -620,18 +620,22 @@ class GameEngine {
     const definition = unitRegistry.get(unit.definitionId);
     if (!definition) return;
 
-    const moveCost = getMovementCostTo(unit, destination, this.state);
+    let moveCost = getMovementCostTo(unit, destination, this.state);
     if (moveCost === null) return;
 
     // Check if unit has enough supply
     if (unit.supply < moveCost) return;
 
     const oldPosition = { ...unit.position };
-    let currentPosition = { ...oldPosition };
+
     let finalPosition = { ...oldPosition };
 
+    const isAerial = definition.movement.type === 'fly' || definition.movement.type === 'hover';
+
     // Move step-by-step
-    for (const step of path) {
+    for (let i = 0; i < path.length; i++) {
+      const step = path[i];
+      const isFinalStep = i === path.length - 1;
       const tile = this.state.map[step.y]?.[step.x];
       
       // Ambush check: if invisible enemy, stop at previous step
@@ -645,13 +649,23 @@ class GameEngine {
         }
       }
 
-      // If step is a building, don't land on it (Wargroove style)
+      // If step is a building, don't land on it
+      // Aerial units can fly over buildings but cannot land on them
       if (tile.content.type === 'building') {
-        break;
+        if (!isAerial || isFinalStep) {
+          break;
+        }
       }
       
-      currentPosition = { ...step };
       finalPosition = { ...step };
+    }
+
+    // Verify final destination isn't occupied by another unit
+    const finalTile = this.state.map[finalPosition.y]?.[finalPosition.x];
+    if (finalTile && finalTile.content.type === 'unit' && finalTile.content.unitId !== unitId) {
+      // Revert to old position if we got stuck on another unit
+      finalPosition = { ...oldPosition };
+      moveCost = 0;
     }
 
     // Clear old position
