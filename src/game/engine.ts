@@ -566,6 +566,51 @@ class GameEngine {
   }
 
   /**
+   * Update the hover path dynamically without selecting the destination.
+   */
+  updateHoverPath(position: Position | null): void {
+    if (!this.state || this.state.phase !== 'ACTION_PREVIEW_MOVE' || !this.state.movePreview) return;
+
+    if (!position) {
+      if (this.state.movePreview.hoverPath) {
+        this.state.movePreview.hoverPath = undefined;
+        // Emit full state update so React rerenders the hover path
+        eventBus.emit('GAME_STATE_FULL_UPDATE', { ...this.state });
+      }
+      return;
+    }
+
+    // Ensure the position is reachable
+    const isReachable = this.state.movePreview.reachableTiles.some(
+      (t) => t.x === position.x && t.y === position.y
+    );
+    if (!isReachable) {
+       if (this.state.movePreview.hoverPath) {
+         this.state.movePreview.hoverPath = undefined;
+         eventBus.emit('GAME_STATE_FULL_UPDATE', { ...this.state });
+       }
+       return;
+    }
+
+    const unitId = this.state.selectedUnitId;
+    if (!unitId) return;
+
+    const unit = this.state.units.get(unitId);
+    if (!unit) return;
+
+    const path = findPath(unit.position, position, unit, this.state);
+    if (path) {
+      this.state.movePreview.hoverPath = path;
+      eventBus.emit('GAME_STATE_FULL_UPDATE', { ...this.state });
+    } else {
+       if (this.state.movePreview.hoverPath) {
+         this.state.movePreview.hoverPath = undefined;
+         eventBus.emit('GAME_STATE_FULL_UPDATE', { ...this.state });
+       }
+    }
+  }
+
+  /**
    * Select a destination tile from the movement preview.
    * Commits to moving but doesn't execute until confirmed.
    */

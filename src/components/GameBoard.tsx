@@ -192,10 +192,16 @@ export function GameBoard({ state, onStateChange, onTileHover, onTileLeave }: Ga
 
   const handleTileEnter = useCallback((x: number, y: number) => {
     onTileHover?.({ x, y });
+    if (gameEngine.getState()?.phase === 'ACTION_PREVIEW_MOVE') {
+      gameEngine.updateHoverPath({ x, y });
+    }
   }, [onTileHover]);
 
   const handleTileLeave = useCallback(() => {
     onTileLeave?.();
+    if (gameEngine.getState()?.phase === 'ACTION_PREVIEW_MOVE') {
+      gameEngine.updateHoverPath(null);
+    }
   }, [onTileLeave]);
 
   const mapHeight = state.map.length;
@@ -340,6 +346,25 @@ const isBlockedEnemy = isBlockedByEnemy(x, y);
             </div>
           );
         })}
+
+        {state.movePreview?.hoverPath && state.movePreview.hoverPath.map((pos, idx) => (
+          <div
+            key={`path-${idx}`}
+            className="hover-path-dot"
+            style={{
+              left: pos.x * TILE_SIZE + TILE_SIZE / 2,
+              top: pos.y * TILE_SIZE + TILE_SIZE / 2,
+              width: 12,
+              height: 12,
+              backgroundColor: 'rgba(255, 255, 255, 0.7)',
+              borderRadius: '50%',
+              position: 'absolute',
+              transform: 'translate(-50%, -50%)',
+              pointerEvents: 'none',
+              zIndex: 10,
+            }}
+          />
+        ))}
 
         {renderActionPanel()}
       </div>

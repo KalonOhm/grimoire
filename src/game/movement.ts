@@ -188,7 +188,13 @@ export function findPath(
           existingNode.parent = current;
         }
       } else {
-        const h = manhattanDistance(neighbor, to);
+        const dx1 = neighbor.x - to.x;
+        const dy1 = neighbor.y - to.y;
+        const dx2 = from.x - to.x;
+        const dy2 = from.y - to.y;
+        const crossProduct = Math.abs(dx1 * dy2 - dx2 * dy1);
+        const h = manhattanDistance(neighbor, to) + crossProduct * 0.001;
+        
         openSet.push({
           position: neighbor,
           g: tentativeG,

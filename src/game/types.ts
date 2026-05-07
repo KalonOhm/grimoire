@@ -308,6 +308,7 @@ export interface GameState {
     reachableTiles: Position[];  // Tiles unit can reach
     blockedTiles: Position[];  // Tiles blocked but adjacent to reachable
     path: Position[];           // Path to selected destination
+    hoverPath?: Position[];      // Path previewed on hover
     destination: Position | null; // Selected destination
   } | null;
   
